@@ -69,12 +69,7 @@ public class MenuFrame extends AppBaseFrame {
         constraints.gridx = 0;
         constraints.gridy = 0;
         newGameButton.setFont(textFont.deriveFont(50f));
-        newGameButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                onNewGameClicked();
-            }
-        });
+        newGameButton.addActionListener(e -> onNewGameClicked());
         buttonsPanel.add(newGameButton, constraints);
 
         JButton exitGameButton = new JButton("Exit Game");
@@ -82,12 +77,7 @@ public class MenuFrame extends AppBaseFrame {
         constraints.gridx = 0;
         constraints.gridy = 1;
         exitGameButton.setFont(textFont.deriveFont(50f));
-        exitGameButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                onExitClicked();
-            }
-        });
+        exitGameButton.addActionListener(e -> onExitClicked());
         buttonsPanel.add(exitGameButton, constraints);
     }
 

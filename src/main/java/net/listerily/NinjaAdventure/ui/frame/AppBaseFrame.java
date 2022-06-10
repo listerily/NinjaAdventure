@@ -1,6 +1,8 @@
-package net.listerily.NinjaAdventure.ui;
+package net.listerily.NinjaAdventure.ui.frame;
 
 import net.listerily.NinjaAdventure.App;
+import net.listerily.NinjaAdventure.resources.CachedResources;
+import net.listerily.NinjaAdventure.resources.ResourceManager;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -12,6 +14,7 @@ import java.util.logging.Level;
 
 public class AppBaseFrame extends JFrame {
     protected final App app;
+    private final Font titleFont, textFont;
     private long animationTick = 0L;
     public AppBaseFrame(App app) {
         this.app = app;
@@ -20,6 +23,15 @@ public class AppBaseFrame extends JFrame {
         } catch (IOException | NullPointerException e) {
             app.getAppLogger().log(Level.SEVERE, "Unable to load app icon. Fallback to default icon. ", e);
         }
+        ResourceManager resourceManager = app.getResourceManager();
+        CachedResources cachedResources = resourceManager.getCachedResources();
+        try {
+            titleFont = cachedResources.readFont(Font.TRUETYPE_FONT, "HUD/Font/ka1.ttf");
+            textFont = cachedResources.readFont(Font.TRUETYPE_FONT, "HUD/Font/Gameplay.ttf");
+        } catch (IOException | FontFormatException e) {
+            throw new RuntimeException(e);
+        }
+
         setSize(1536, 1080);
         if (requireTimedRepaint()) {
             new Timer(125, e -> {
@@ -47,5 +59,13 @@ public class AppBaseFrame extends JFrame {
 
     protected final synchronized long getAnimationTick() {
         return animationTick;
+    }
+
+    protected Font getTitleFont() {
+        return titleFont;
+    }
+
+    protected Font getTextFont() {
+        return textFont;
     }
 }

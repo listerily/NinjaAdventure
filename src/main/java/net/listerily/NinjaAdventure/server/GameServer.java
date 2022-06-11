@@ -18,10 +18,12 @@ public class GameServer {
     private HashMap<UUID, Thread> messageProducerLookup;
     private HashMap<UUID, Thread> messageConsumerLookup;
     private HashMap<UUID, Socket> socketLookup;
+
     private ExecutorService clientMessageExecutor;
     private ClientMessageHandler clientMessageHandler;
     private ServerDataManager serverDataManager;
     private static final int MAX_CLIENTS = 4;
+
     private int aliveConnections;
     private final App app;
 

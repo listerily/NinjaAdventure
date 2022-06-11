@@ -6,6 +6,7 @@ import javax.swing.*;
 import java.awt.*;
 
 public class LoadingPanel extends JPanel {
+    private JLabel titleLabel;
     public LoadingPanel(AppBaseFrame frame) {
         setLayout(new GridBagLayout());
 
@@ -13,16 +14,20 @@ public class LoadingPanel extends JPanel {
         constraints.insets = new Insets(10, 0, 0, 10);
         constraints.fill = GridBagConstraints.HORIZONTAL;
 
-        JLabel title = new JLabel("Establishing connection", JLabel.CENTER);
-        title.setFont(frame.getTextFont().deriveFont(70f));
+        titleLabel = new JLabel("Establishing connection", JLabel.CENTER);
+        titleLabel.setFont(frame.getTextFont().deriveFont(70f));
         constraints.gridx = 0;
         constraints.gridy = 0;
-        add(title, constraints);
+        add(titleLabel, constraints);
 
         LoadingBar loadingBar = new LoadingBar();
         loadingBar.setFont(frame.getTextFont().deriveFont(70f));
         constraints.gridx = 0;
         constraints.gridy = 1;
         add(loadingBar, constraints);
+    }
+
+    public void setLoadingMessage(String message) {
+        titleLabel.setText(message);
     }
 }

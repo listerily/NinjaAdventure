@@ -1,11 +1,16 @@
 package net.listerily.NinjaAdventure.ui.dialog;
 
 import net.listerily.NinjaAdventure.App;
+import net.listerily.NinjaAdventure.ui.frame.GameFrame;
 
 import javax.swing.*;
 import java.awt.*;
 
 public class JoinDialog extends AppBaseDialog {
+    private static final String ADDRESS_DEFAULT = "localhost";
+    private static final String PORT_DEFAULT = "2022";
+    private final JTextField textFieldPort;
+    private final JTextField textFieldAddress;
     public JoinDialog(App app) {
         super(app);
         setSize(720, 480);
@@ -28,7 +33,7 @@ public class JoinDialog extends AppBaseDialog {
         constraints.gridy = 0;
         labelAddress.setFont(getTextFont().deriveFont(20f));
         addressPanel.add(labelAddress, constraints);
-        JTextField textFieldAddress = new JTextField("localhost");
+        textFieldAddress = new JTextField(ADDRESS_DEFAULT);
         constraints.fill = GridBagConstraints.HORIZONTAL;
         constraints.gridx = 0;
         constraints.gridy = 1;
@@ -45,7 +50,7 @@ public class JoinDialog extends AppBaseDialog {
         constraints.gridy = 0;
         labelPort.setFont(getTextFont().deriveFont(20f));
         portPanel.add(labelPort, constraints);
-        JTextField textFieldPort = new JTextField("2022");
+        textFieldPort = new JTextField(PORT_DEFAULT);
         constraints.fill = GridBagConstraints.HORIZONTAL;
         constraints.gridx = 0;
         constraints.gridy = 1;
@@ -62,7 +67,7 @@ public class JoinDialog extends AppBaseDialog {
         constraints.gridx = 0;
         constraints.gridy = 0;
         buttonCancel.setFont(getTextFont().deriveFont(20f));
-        buttonCancel.setBackground(new Color(0,0,0));
+        buttonCancel.setBackground(new Color(52,52,52));
         buttonCancel.setForeground(Color.WHITE);
         buttonCancel.setFocusPainted(false);
         buttonCancel.setBorderPainted(false);
@@ -73,7 +78,7 @@ public class JoinDialog extends AppBaseDialog {
         constraints.gridx = 1;
         constraints.gridy = 0;
         buttonJoin.setFont(getTextFont().deriveFont(20f));
-        buttonJoin.setBackground(new Color(0,0,0));
+        buttonJoin.setBackground(new Color(52,52,52));
         buttonJoin.setForeground(Color.WHITE);
         buttonJoin.setFocusPainted(false);
         buttonJoin.setBorderPainted(false);
@@ -87,8 +92,50 @@ public class JoinDialog extends AppBaseDialog {
     }
 
     public void onJoinClicked() {
+        String addressString = textFieldAddress.getText();
+        String portString = textFieldPort.getText();
+        if (!checkValidity(addressString, portString))
+            return;
         this.setVisible(false);
         app.getWindowManager().hideMenuFrame();
-        app.getWindowManager().showGameFrame();
+        app.getWindowManager().showGameFrame(new GameFrame.GameLaunchOptions(addressString, Integer.parseInt(portString)));
+    }
+
+    private boolean checkValidity(String addressString, String portString) {
+        if (addressString.equals("localhost") || addressString.equals("::1")) {
+            addressString = "127.0.0.1";
+        }
+        String[] addressParts = addressString.split("\\.");
+        if (addressParts.length != 4) {
+            showErrorModal("Invalid Address");
+            return false;
+        }
+        for (String addressPart : addressParts) {
+            try {
+                int number = Integer.parseInt(addressPart);
+                if (number < 0 || number >= 256) {
+                    showErrorModal("Invalid Address");
+                    return false;
+                }
+            } catch (NumberFormatException e) {
+                showErrorModal("Invalid Address");
+                return false;
+            }
+        }
+        try {
+            int number = Integer.parseInt(portString);
+            if (number < 0 || number >= 65536) {
+                showErrorModal("Invalid Port");
+                return false;
+            }
+        } catch (NumberFormatException e) {
+            showErrorModal("Invalid Port");
+            return false;
+        }
+        return true;
+    }
+
+    public void showErrorModal(String message){
+        new MessageBoxDialog(app, "Error", message).setVisible(true);
     }
 }

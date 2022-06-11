@@ -7,18 +7,15 @@ import java.net.Socket;
 public class GameServer {
     private ServerSocket serverSocket;
     public GameServer() {
+    }
+
+    public void startService(int port) throws IOException {
+        serverSocket = new ServerSocket(2022);
 
     }
 
-    public void startService() {
-        try {
-            serverSocket = new ServerSocket(2022);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public void terminateService() {
-
+    public void terminateService() throws IOException {
+        if (serverSocket != null)
+            serverSocket.close();
     }
 }

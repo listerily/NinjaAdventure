@@ -3,6 +3,7 @@ package net.listerily.NinjaAdventure.ui.frame;
 import net.listerily.NinjaAdventure.App;
 import net.listerily.NinjaAdventure.resources.CachedResources;
 import net.listerily.NinjaAdventure.resources.ResourceManager;
+import net.listerily.NinjaAdventure.ui.WindowManager;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -52,5 +53,9 @@ public class AppBaseFrame extends JFrame {
 
     public Font getTextFont() {
         return textFont;
+    }
+
+    public WindowManager getWindowManager() {
+        return app.getWindowManager();
     }
 }

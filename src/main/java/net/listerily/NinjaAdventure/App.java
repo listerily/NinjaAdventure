@@ -9,11 +9,13 @@ public class App {
     private final Logger logger;
     private final ResourceManager resourceManager;
     private final WindowManager windowManager;
+    private final GameManager gameManager;
 
     public App() {
         logger = Logger.getLogger("NinjaAdventure");
         resourceManager = new ResourceManager(this);
         windowManager = new WindowManager(this);
+        gameManager = new GameManager(this);
     }
 
     public void startGame() {
@@ -30,5 +32,9 @@ public class App {
 
     public WindowManager getWindowManager()  {
         return windowManager;
+    }
+
+    public GameManager getGameManager() {
+        return gameManager;
     }
 }

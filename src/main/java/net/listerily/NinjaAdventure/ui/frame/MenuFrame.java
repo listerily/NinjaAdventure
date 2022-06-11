@@ -58,7 +58,7 @@ public class MenuFrame extends AppBaseFrame {
         constraints.gridx = 0;
         constraints.gridy = 0;
         newGameButton.setFont(getTextFont().deriveFont(50f));
-        newGameButton.setBackground(new Color(0,0,0));
+        newGameButton.setBackground(new Color(52,52,52));
         newGameButton.setForeground(Color.WHITE);
         newGameButton.setFocusPainted(false);
         newGameButton.setBorderPainted(false);
@@ -70,7 +70,7 @@ public class MenuFrame extends AppBaseFrame {
         constraints.gridx = 0;
         constraints.gridy = 1;
         joinGameButton.setFont(getTextFont().deriveFont(50f));
-        joinGameButton.setBackground(new Color(0,0,0));
+        joinGameButton.setBackground(new Color(52,52,52));
         joinGameButton.setForeground(Color.WHITE);
         joinGameButton.setFocusPainted(false);
         joinGameButton.setBorderPainted(false);
@@ -82,7 +82,7 @@ public class MenuFrame extends AppBaseFrame {
         constraints.gridx = 0;
         constraints.gridy = 2;
         exitGameButton.setFont(getTextFont().deriveFont(50f));
-        exitGameButton.setBackground(new Color(0,0,0));
+        exitGameButton.setBackground(new Color(52,52,52));
         exitGameButton.setForeground(Color.WHITE);
         exitGameButton.setFocusPainted(false);
         exitGameButton.setBorderPainted(false);
@@ -92,7 +92,7 @@ public class MenuFrame extends AppBaseFrame {
 
     private void onNewGameClicked() {
         app.getWindowManager().hideMenuFrame();
-        app.getWindowManager().showGameFrame();
+        app.getWindowManager().showGameFrame(new GameFrame.GameLaunchOptions(2022));
     }
 
     private void onJoinGameClicked() {

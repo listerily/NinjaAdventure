@@ -1,7 +1,7 @@
 package net.listerily.NinjaAdventure.server;
 
 import net.listerily.NinjaAdventure.App;
-import net.listerily.NinjaAdventure.data.SCMessage;
+import net.listerily.NinjaAdventure.communication.SCMessage;
 
 import java.io.*;
 import java.net.ServerSocket;
@@ -18,8 +18,12 @@ public class GameServer {
     private HashMap<UUID, Thread> messageProducerLookup;
     private HashMap<UUID, Thread> messageConsumerLookup;
     private HashMap<UUID, Socket> socketLookup;
-    private ExecutorService clientMessageHandler;
-    private static final int MAX_CLIENTS = 1;
+
+    private ExecutorService clientMessageExecutor;
+    private ClientMessageHandler clientMessageHandler;
+    private ServerDataManager serverDataManager;
+    private static final int MAX_CLIENTS = 4;
+
     private int aliveConnections;
     private final App app;
 
@@ -30,12 +34,15 @@ public class GameServer {
     public void startService(int port) throws IOException {
         synchronized (this) {
             this.serverSocket = new ServerSocket(port);
-            this.clientMessageHandler = Executors.newFixedThreadPool(4);
+            this.clientMessageExecutor = Executors.newFixedThreadPool(4);
             this.messageQueueLookup = new HashMap<>();
             this.socketLookup = new HashMap<>();
             this.messageConsumerLookup = new HashMap<>();
             this.messageProducerLookup = new HashMap<>();
             this.aliveConnections = 0;
+            this.serverDataManager = new ServerDataManager();
+            this.clientMessageHandler = new ClientMessageHandler(serverDataManager);
+            this.serverDataManager.initialize();
         }
         startListening();
     }
@@ -117,12 +124,14 @@ public class GameServer {
                     while (true) {
                         try {
                             SCMessage message = (SCMessage) inputStream.readObject();
-                            clientMessageHandler.submit(() -> {
+                            clientMessageExecutor.submit(() -> {
                                 SCMessage msg = handleClientMessage(clientUUID, message);
-                                try {
-                                    messageQueue.put(msg);
-                                } catch (InterruptedException e) {
-                                    app.getAppLogger().log(Level.WARNING, "SERVER: Message Queue interrupted.", e);
+                                if (msg != null) {
+                                    try {
+                                        messageQueue.put(msg);
+                                    } catch (InterruptedException e) {
+                                        app.getAppLogger().log(Level.WARNING, "SERVER: Message Queue interrupted.", e);
+                                    }
                                 }
                             });
                         } catch (IOException | ClassNotFoundException e) {
@@ -154,7 +163,7 @@ public class GameServer {
     }
 
     private SCMessage handleClientMessage(UUID clientUUID, SCMessage clientMessage) {
-        return null;
+        return clientMessageHandler.handle(clientUUID, clientMessage);
     }
 
     private synchronized void terminateClient(UUID clientUUID) {
@@ -168,9 +177,11 @@ public class GameServer {
         } catch (IOException e) {
             app.getAppLogger().log(Level.WARNING, "SERVER: Unable to close client socket. Skipping.", e);
         }
+        serverListener.onTerminateClientService(clientUUID);
     }
 
     public synchronized void terminateService() throws IOException {
+        clientMessageExecutor.shutdownNow();
         // shutdown producer and consumer executions
         for (UUID key : messageProducerLookup.keySet()) {
             messageProducerLookup.get(key).interrupt();
@@ -181,9 +192,25 @@ public class GameServer {
         // close client sockets
         for (UUID key : socketLookup.keySet()) {
             socketLookup.get(key).close();
+            serverListener.onTerminateClientService(key);
         }
         // close server socket
         if (serverSocket != null)
             serverSocket.close();
+    }
+
+    private ServerListener serverListener = new ServerListener() {
+        @Override
+        public void onTerminateClientService(UUID uuid) {
+
+        }
+    };
+
+    public void setServerListener(ServerListener serverListener) {
+        this.serverListener = serverListener;
+    }
+
+    public interface ServerListener {
+        void onTerminateClientService(UUID uuid);
     }
 }

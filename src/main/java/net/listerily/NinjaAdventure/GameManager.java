@@ -3,8 +3,6 @@ package net.listerily.NinjaAdventure;
 import net.listerily.NinjaAdventure.client.GameClient;
 import net.listerily.NinjaAdventure.server.GameServer;
 
-import java.io.IOException;
-
 public class GameManager {
     private final App app;
     private int status = STATUS_NOT_RUNNING;
@@ -20,7 +18,7 @@ public class GameManager {
         this.app = app;
     }
 
-    public void startGameAsServer(int port) throws IOException {
+    public void startGameAsServer(int port) {
         if (status != STATUS_NOT_RUNNING)
             throw new IllegalStateException("Game has been started. DO NOT start duplicate instances.");
         gameThread = new Thread() {
@@ -28,14 +26,22 @@ public class GameManager {
             public void run() {
                 super.run();
                 try {
-                    if (gameStateListener != null) gameStateListener.onEvent(new GameEvent(GameEvent.EVENT_STARTING_SERVER));
-                    gameServer = new GameServer();
+                    if (gameStateListener != null) gameStateListener.onEvent(new GameLaunchEvent(GameLaunchEvent.EVENT_STARTING_SERVER));
+                    gameServer = new GameServer(app);
                     gameServer.startService(port);
-                    if (gameStateListener != null) gameStateListener.onEvent(new GameEvent(GameEvent.EVENT_STARTED_SERVER));
+                    if (gameStateListener != null) gameStateListener.onEvent(new GameLaunchEvent(GameLaunchEvent.EVENT_STARTED_SERVER));
+                    if (gameStateListener != null) gameStateListener.onEvent(new GameLaunchEvent(GameLaunchEvent.EVENT_CONNECTING));
+                    gameClient = new GameClient(app);
+                    gameClient.connect("127.0.0.1", port);
+                    if (gameStateListener != null) gameStateListener.onEvent(new GameLaunchEvent(GameLaunchEvent.EVENT_CONNECTED));
+                    if (gameStateListener != null) gameStateListener.onEvent(new GameLaunchEvent(GameLaunchEvent.EVENT_LOADING_DATA));
+                    gameClient.loadData();
+                    if (gameStateListener != null) gameStateListener.onEvent(new GameLaunchEvent(GameLaunchEvent.EVENT_LOADED_DATA));
+                    gameClient.startListening();
                     status = STATUS_SERVER;
-                    if (gameStateListener != null) gameStateListener.onEvent(new GameEvent(GameEvent.EVENT_SUCCEED));
+                    if (gameStateListener != null) gameStateListener.onEvent(new GameLaunchEvent(GameLaunchEvent.EVENT_SUCCEED));
                 } catch (Exception throwable) {
-                    if (gameStateListener != null) gameStateListener.onEvent(new GameEvent(GameEvent.EVENT_FAILED, throwable));
+                    if (gameStateListener != null) gameStateListener.onEvent(new GameLaunchEvent(GameLaunchEvent.EVENT_FAILED, throwable));
                 }
             }
         };
@@ -45,7 +51,27 @@ public class GameManager {
     public void startGameAsClient(String address, int port) {
         if (status != STATUS_NOT_RUNNING)
             throw new IllegalStateException("Game has been started. DO NOT start duplicate instances.");
-        status = STATUS_CLIENT;
+        gameThread = new Thread() {
+            @Override
+            public void run() {
+                super.run();
+                try {
+                    if (gameStateListener != null) gameStateListener.onEvent(new GameLaunchEvent(GameLaunchEvent.EVENT_CONNECTING));
+                    gameClient = new GameClient(app);
+                    gameClient.connect(address, port);
+                    if (gameStateListener != null) gameStateListener.onEvent(new GameLaunchEvent(GameLaunchEvent.EVENT_CONNECTED));
+                    if (gameStateListener != null) gameStateListener.onEvent(new GameLaunchEvent(GameLaunchEvent.EVENT_LOADING_DATA));
+                    gameClient.loadData();
+                    if (gameStateListener != null) gameStateListener.onEvent(new GameLaunchEvent(GameLaunchEvent.EVENT_LOADED_DATA));
+                    gameClient.startListening();
+                    status = STATUS_CLIENT;
+                    if (gameStateListener != null) gameStateListener.onEvent(new GameLaunchEvent(GameLaunchEvent.EVENT_SUCCEED));
+                } catch (Exception throwable) {
+                    if (gameStateListener != null) gameStateListener.onEvent(new GameLaunchEvent(GameLaunchEvent.EVENT_FAILED, throwable));
+                }
+            }
+        };
+        gameThread.start();
     }
 
     public void terminateGame() {

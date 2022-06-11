@@ -1,6 +1,6 @@
 package net.listerily.NinjaAdventure;
 
-public class GameEvent {
+public class GameLaunchEvent {
     public int type;
     public Object obj;
     public static final int EVENT_UNDEFINED = 0;
@@ -13,11 +13,11 @@ public class GameEvent {
     public static final int EVENT_LOADING_DATA = 7;
     public static final int EVENT_LOADED_DATA = 8;
 
-    public GameEvent(int type) {
+    public GameLaunchEvent(int type) {
         this.type = type;
     }
 
-    public GameEvent(int type, Object obj) {
+    public GameLaunchEvent(int type, Object obj) {
         this(type);
         this.obj = obj;
     }

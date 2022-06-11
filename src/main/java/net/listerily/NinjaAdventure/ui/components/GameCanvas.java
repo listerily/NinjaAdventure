@@ -6,9 +6,9 @@ import java.awt.image.BufferStrategy;
 
 public class GameCanvas extends Canvas {
     private boolean repaintInProgress = false;
-    Color[] back = {Color.YELLOW, Color.BLUE};
+    Color[] back = {Color.BLACK, Color.WHITE};
     int page = 0;
-    public GameCanvas(JComponent component) {
+    public GameCanvas() {
         setIgnoreRepaint(true);
         new Timer(20, e -> paintEvent()).start();
     }

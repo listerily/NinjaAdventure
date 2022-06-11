@@ -3,12 +3,13 @@ package net.listerily.NinjaAdventure;
 import net.listerily.NinjaAdventure.client.GameClient;
 import net.listerily.NinjaAdventure.server.GameServer;
 
+import java.io.IOException;
+
 public class GameManager {
     private final App app;
     private int status = STATUS_NOT_RUNNING;
     private GameServer gameServer = null;
     private GameClient gameClient = null;
-    private GameStateListener gameStateListener = null;
     private Thread gameThread;
     public static final int STATUS_NOT_RUNNING = 0;
     public static final int STATUS_SERVER = 1;
@@ -26,22 +27,21 @@ public class GameManager {
             public void run() {
                 super.run();
                 try {
-                    if (gameStateListener != null) gameStateListener.onEvent(new GameLaunchEvent(GameLaunchEvent.EVENT_STARTING_SERVER));
+                    gameStateListener.onEvent(new GameLaunchEvent(GameLaunchEvent.EVENT_STARTING_SERVER));
                     gameServer = new GameServer(app);
                     gameServer.startService(port);
-                    if (gameStateListener != null) gameStateListener.onEvent(new GameLaunchEvent(GameLaunchEvent.EVENT_STARTED_SERVER));
-                    if (gameStateListener != null) gameStateListener.onEvent(new GameLaunchEvent(GameLaunchEvent.EVENT_CONNECTING));
+                    gameStateListener.onEvent(new GameLaunchEvent(GameLaunchEvent.EVENT_STARTED_SERVER));
+                    gameStateListener.onEvent(new GameLaunchEvent(GameLaunchEvent.EVENT_CONNECTING));
                     gameClient = new GameClient(app);
                     gameClient.connect("127.0.0.1", port);
-                    if (gameStateListener != null) gameStateListener.onEvent(new GameLaunchEvent(GameLaunchEvent.EVENT_CONNECTED));
-                    if (gameStateListener != null) gameStateListener.onEvent(new GameLaunchEvent(GameLaunchEvent.EVENT_LOADING_DATA));
-                    gameClient.loadData();
-                    if (gameStateListener != null) gameStateListener.onEvent(new GameLaunchEvent(GameLaunchEvent.EVENT_LOADED_DATA));
+                    gameStateListener.onEvent(new GameLaunchEvent(GameLaunchEvent.EVENT_CONNECTED));
+                    gameStateListener.onEvent(new GameLaunchEvent(GameLaunchEvent.EVENT_LOADING_DATA));
                     gameClient.startListening();
+                    gameStateListener.onEvent(new GameLaunchEvent(GameLaunchEvent.EVENT_LOADED_DATA));
                     status = STATUS_SERVER;
-                    if (gameStateListener != null) gameStateListener.onEvent(new GameLaunchEvent(GameLaunchEvent.EVENT_SUCCEED));
-                } catch (Exception throwable) {
-                    if (gameStateListener != null) gameStateListener.onEvent(new GameLaunchEvent(GameLaunchEvent.EVENT_FAILED, throwable));
+                    gameStateListener.onEvent(new GameLaunchEvent(GameLaunchEvent.EVENT_SUCCEED));
+                } catch (IOException e) {
+                    gameStateListener.onEvent(new GameLaunchEvent(GameLaunchEvent.EVENT_FAILED, e));
                 }
             }
         };
@@ -56,18 +56,17 @@ public class GameManager {
             public void run() {
                 super.run();
                 try {
-                    if (gameStateListener != null) gameStateListener.onEvent(new GameLaunchEvent(GameLaunchEvent.EVENT_CONNECTING));
+                    gameStateListener.onEvent(new GameLaunchEvent(GameLaunchEvent.EVENT_CONNECTING));
                     gameClient = new GameClient(app);
                     gameClient.connect(address, port);
-                    if (gameStateListener != null) gameStateListener.onEvent(new GameLaunchEvent(GameLaunchEvent.EVENT_CONNECTED));
-                    if (gameStateListener != null) gameStateListener.onEvent(new GameLaunchEvent(GameLaunchEvent.EVENT_LOADING_DATA));
-                    gameClient.loadData();
-                    if (gameStateListener != null) gameStateListener.onEvent(new GameLaunchEvent(GameLaunchEvent.EVENT_LOADED_DATA));
+                    gameStateListener.onEvent(new GameLaunchEvent(GameLaunchEvent.EVENT_CONNECTED));
+                    gameStateListener.onEvent(new GameLaunchEvent(GameLaunchEvent.EVENT_LOADING_DATA));
                     gameClient.startListening();
+                    gameStateListener.onEvent(new GameLaunchEvent(GameLaunchEvent.EVENT_LOADED_DATA));
                     status = STATUS_CLIENT;
-                    if (gameStateListener != null) gameStateListener.onEvent(new GameLaunchEvent(GameLaunchEvent.EVENT_SUCCEED));
-                } catch (Exception throwable) {
-                    if (gameStateListener != null) gameStateListener.onEvent(new GameLaunchEvent(GameLaunchEvent.EVENT_FAILED, throwable));
+                    gameStateListener.onEvent(new GameLaunchEvent(GameLaunchEvent.EVENT_SUCCEED));
+                } catch (IOException  e) {
+                    gameStateListener.onEvent(new GameLaunchEvent(GameLaunchEvent.EVENT_FAILED, e));
                 }
             }
         };
@@ -78,6 +77,7 @@ public class GameManager {
         status = STATUS_NOT_RUNNING;
     }
 
+    private GameStateListener gameStateListener = event -> {};
     public void setGameStateListener(GameStateListener gameStateListener) {
         this.gameStateListener = gameStateListener;
     }

@@ -58,6 +58,10 @@ public class MenuFrame extends AppBaseFrame {
         constraints.gridx = 0;
         constraints.gridy = 0;
         newGameButton.setFont(getTextFont().deriveFont(50f));
+        newGameButton.setBackground(new Color(0,0,0));
+        newGameButton.setForeground(Color.WHITE);
+        newGameButton.setFocusPainted(false);
+        newGameButton.setBorderPainted(false);
         newGameButton.addActionListener(e -> onNewGameClicked());
         buttonsPanel.add(newGameButton, constraints);
 
@@ -66,6 +70,10 @@ public class MenuFrame extends AppBaseFrame {
         constraints.gridx = 0;
         constraints.gridy = 1;
         joinGameButton.setFont(getTextFont().deriveFont(50f));
+        joinGameButton.setBackground(new Color(0,0,0));
+        joinGameButton.setForeground(Color.WHITE);
+        joinGameButton.setFocusPainted(false);
+        joinGameButton.setBorderPainted(false);
         joinGameButton.addActionListener(e -> onJoinGameClicked());
         buttonsPanel.add(joinGameButton, constraints);
 
@@ -74,6 +82,10 @@ public class MenuFrame extends AppBaseFrame {
         constraints.gridx = 0;
         constraints.gridy = 2;
         exitGameButton.setFont(getTextFont().deriveFont(50f));
+        exitGameButton.setBackground(new Color(0,0,0));
+        exitGameButton.setForeground(Color.WHITE);
+        exitGameButton.setFocusPainted(false);
+        exitGameButton.setBorderPainted(false);
         exitGameButton.addActionListener(e -> onExitClicked());
         buttonsPanel.add(exitGameButton, constraints);
     }

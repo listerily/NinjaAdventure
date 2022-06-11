@@ -62,6 +62,10 @@ public class JoinDialog extends AppBaseDialog {
         constraints.gridx = 0;
         constraints.gridy = 0;
         buttonCancel.setFont(getTextFont().deriveFont(20f));
+        buttonCancel.setBackground(new Color(0,0,0));
+        buttonCancel.setForeground(Color.WHITE);
+        buttonCancel.setFocusPainted(false);
+        buttonCancel.setBorderPainted(false);
         buttonCancel.addActionListener(e -> onCancelClicked());
         buttonsPanel.add(buttonCancel, constraints);
         JButton buttonJoin = new JButton("Join");
@@ -69,6 +73,10 @@ public class JoinDialog extends AppBaseDialog {
         constraints.gridx = 1;
         constraints.gridy = 0;
         buttonJoin.setFont(getTextFont().deriveFont(20f));
+        buttonJoin.setBackground(new Color(0,0,0));
+        buttonJoin.setForeground(Color.WHITE);
+        buttonJoin.setFocusPainted(false);
+        buttonJoin.setBorderPainted(false);
         buttonJoin.addActionListener(e -> onJoinClicked());
         buttonsPanel.add(buttonJoin, constraints);
         this.add(buttonsPanel);

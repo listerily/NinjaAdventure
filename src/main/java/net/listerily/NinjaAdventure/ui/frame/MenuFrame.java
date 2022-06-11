@@ -93,11 +93,6 @@ public class MenuFrame extends AppBaseFrame {
     }
 
     @Override
-    protected boolean requireTimedRepaint() {
-        return true;
-    }
-
-    @Override
     protected boolean shouldExitOnWindowClose() {
         return true;
     }

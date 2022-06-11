@@ -15,7 +15,6 @@ import java.util.logging.Level;
 public class AppBaseFrame extends JFrame {
     protected final App app;
     private final Font titleFont, textFont;
-    private long animationTick = 0L;
     public AppBaseFrame(App app) {
         this.app = app;
         try {
@@ -33,12 +32,6 @@ public class AppBaseFrame extends JFrame {
         }
 
         setSize(1536, 1080);
-        if (requireTimedRepaint()) {
-            new Timer(125, e -> {
-                synchronized (this) { animationTick++; }
-                repaint(10);
-            }).start();
-        }
         addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
@@ -49,16 +42,8 @@ public class AppBaseFrame extends JFrame {
         setTitle("Ninja Adventure!");
     }
 
-    protected boolean requireTimedRepaint() {
-        return false;
-    }
-
     protected boolean shouldExitOnWindowClose() {
         return false;
-    }
-
-    protected final synchronized long getAnimationTick() {
-        return animationTick;
     }
 
     public Font getTitleFont() {

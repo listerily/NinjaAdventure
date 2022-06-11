@@ -5,21 +5,17 @@ import java.net.ServerSocket;
 import java.net.Socket;
 
 public class GameServer {
+    private ServerSocket serverSocket;
     public GameServer() {
-        try {
-            ServerSocket serverSocket = new ServerSocket(9930);
-//            serverSocket.
-            while (true) {
-                Socket socket = serverSocket.accept();
 
-            }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
     }
 
     public void startService() {
-
+        try {
+            serverSocket = new ServerSocket(2022);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public void terminateService() {

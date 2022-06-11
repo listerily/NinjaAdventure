@@ -61,11 +61,11 @@ public class AppBaseFrame extends JFrame {
         return animationTick;
     }
 
-    protected Font getTitleFont() {
+    public Font getTitleFont() {
         return titleFont;
     }
 
-    protected Font getTextFont() {
+    public Font getTextFont() {
         return textFont;
     }
 }

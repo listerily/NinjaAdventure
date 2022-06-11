@@ -3,6 +3,8 @@ package net.listerily.NinjaAdventure;
 import net.listerily.NinjaAdventure.client.GameClient;
 import net.listerily.NinjaAdventure.server.GameServer;
 
+import java.io.IOException;
+
 public class GameManager {
     private final App app;
     private int status = STATUS_NOT_RUNNING;
@@ -40,8 +42,8 @@ public class GameManager {
                     gameClient.startListening();
                     status = STATUS_SERVER;
                     if (gameStateListener != null) gameStateListener.onEvent(new GameLaunchEvent(GameLaunchEvent.EVENT_SUCCEED));
-                } catch (Exception throwable) {
-                    if (gameStateListener != null) gameStateListener.onEvent(new GameLaunchEvent(GameLaunchEvent.EVENT_FAILED, throwable));
+                } catch (IOException | ClassNotFoundException e) {
+                    if (gameStateListener != null) gameStateListener.onEvent(new GameLaunchEvent(GameLaunchEvent.EVENT_FAILED, e));
                 }
             }
         };
@@ -66,8 +68,8 @@ public class GameManager {
                     gameClient.startListening();
                     status = STATUS_CLIENT;
                     if (gameStateListener != null) gameStateListener.onEvent(new GameLaunchEvent(GameLaunchEvent.EVENT_SUCCEED));
-                } catch (Exception throwable) {
-                    if (gameStateListener != null) gameStateListener.onEvent(new GameLaunchEvent(GameLaunchEvent.EVENT_FAILED, throwable));
+                } catch (IOException | ClassNotFoundException e) {
+                    if (gameStateListener != null) gameStateListener.onEvent(new GameLaunchEvent(GameLaunchEvent.EVENT_FAILED, e));
                 }
             }
         };

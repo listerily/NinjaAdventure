@@ -9,6 +9,7 @@ import net.listerily.NinjaAdventure.ui.components.LoadingPanel;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.concurrent.Executors;
 
 public class GameFrame extends AppBaseFrame {
     private final GamingPanel gamingPanel;
@@ -30,6 +31,8 @@ public class GameFrame extends AppBaseFrame {
             gameManager.setGameStateListener(event -> {
                 if (event.type == GameLaunchEvent.EVENT_FAILED) {
                     showErrorPanel(event.obj.toString());
+                } if (event.type == GameLaunchEvent.EVENT_SUCCEED) {
+                    showGamingPanel();
                 } else {
                     loadingPanel.setLoadingMessage(event.toString());
                 }
@@ -39,6 +42,8 @@ public class GameFrame extends AppBaseFrame {
             gameManager.setGameStateListener(event -> {
                 if (event.type == GameLaunchEvent.EVENT_FAILED) {
                     showErrorPanel(event.obj.toString());
+                } if (event.type == GameLaunchEvent.EVENT_SUCCEED) {
+                    showGamingPanel();
                 } else {
                     loadingPanel.setLoadingMessage(event.toString());
                 }
@@ -50,22 +55,24 @@ public class GameFrame extends AppBaseFrame {
     public void showPanel(JPanel panel) {
         this.getContentPane().removeAll();
         this.add(panel);
-        this.repaint();
     }
 
     public void showErrorPanel(String message) {
         showPanel(errorPanel);
         errorPanel.setErrorMessage(message);
+        this.repaint();
     }
 
     public void showLoadingPanel(String message) {
         showPanel(loadingPanel);
         loadingPanel.setLoadingMessage(message);
+        this.repaint();
     }
 
     public void showGamingPanel() {
         showPanel(gamingPanel);
         gamingPanel.initialize();
+        this.repaint();
     }
 
     @Override

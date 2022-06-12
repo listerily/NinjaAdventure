@@ -17,6 +17,14 @@ public class GameManager {
 
     public GameManager(App app) {
         this.app = app;
+        gameServer = new GameServer(app);
+        gameClient = new GameClient(app);
+    }
+
+    public void renewInstance() {
+        gameServer = new GameServer(app);
+        gameClient = new GameClient(app);
+        status = STATUS_NOT_RUNNING;
     }
 
     public void startGameAsServer(int port) {
@@ -28,7 +36,6 @@ public class GameManager {
                 super.run();
                 try {
                     gameStateListener.onEvent(new GameLaunchEvent(GameLaunchEvent.EVENT_STARTING_SERVER));
-                    gameServer = new GameServer(app);
                     gameServer.startService(port);
                     gameStateListener.onEvent(new GameLaunchEvent(GameLaunchEvent.EVENT_STARTED_SERVER));
                     gameStateListener.onEvent(new GameLaunchEvent(GameLaunchEvent.EVENT_CONNECTING));
@@ -57,7 +64,6 @@ public class GameManager {
                 super.run();
                 try {
                     gameStateListener.onEvent(new GameLaunchEvent(GameLaunchEvent.EVENT_CONNECTING));
-                    gameClient = new GameClient(app);
                     gameClient.connect(address, port);
                     gameStateListener.onEvent(new GameLaunchEvent(GameLaunchEvent.EVENT_CONNECTED));
                     gameStateListener.onEvent(new GameLaunchEvent(GameLaunchEvent.EVENT_LOADING_DATA));
@@ -96,5 +102,9 @@ public class GameManager {
 
     public boolean isHostingServer() {
         return getGameStatus() == STATUS_SERVER;
+    }
+
+    public void setClientListener(GameClient.ClientListener clientListener) {
+        gameClient.setClientListener(clientListener);
     }
 }

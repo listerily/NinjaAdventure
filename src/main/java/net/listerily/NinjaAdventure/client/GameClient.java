@@ -52,7 +52,7 @@ public class GameClient {
             serverMessageHandler = new ServerMessageHandler(clientDataManager);
         } catch (IOException | ClassNotFoundException e) {
             app.getAppLogger().log(Level.SEVERE, "CLIENT: IO Error while reading / writing message. Terminating myself.", e);
-            terminateClient();
+            terminateClient(e);
             return;
         }
         clientListeningThread = new Thread() {
@@ -74,7 +74,7 @@ public class GameClient {
                         });
                     } catch (IOException | ClassNotFoundException e) {
                         app.getAppLogger().log(Level.SEVERE, "CLIENT: IO Error while reading message. Terminating Client.", e);
-                        terminateClient();
+                        terminateClient(e);
                         return;
                     }
                 }
@@ -92,7 +92,7 @@ public class GameClient {
                             outputStream.flush();
                         } catch (IOException e) {
                             app.getAppLogger().log(Level.SEVERE, "CLIENT: IO Error while writing message. Terminating myself.", e);
-                            terminateClient();
+                            terminateClient(e);
                             return;
                         }
                     } catch (InterruptedException e) {
@@ -104,9 +104,14 @@ public class GameClient {
         };
         clientListeningThread.start();
         clientWritingThread.start();
+        try {
+            submitMessage(new SCMessage(SCMessage.MSG_UNDEFINED, "Trigger Msg"));
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
     }
 
-    public void terminateClient() {
+    public void terminateClient(Exception exception) {
         clientListeningThread.interrupt();
         clientWritingThread.interrupt();
         clientMessageExecutor.shutdownNow();
@@ -115,7 +120,7 @@ public class GameClient {
         } catch (IOException e) {
             app.getAppLogger().log(Level.WARNING, "CLIENT: IO Error while terminating my socket. Skipping.", e);
         }
-        clientListener.onConnectionLost();
+        clientListener.onConnectionLost(exception);
     }
 
     private SCMessage handleMessage(SCMessage message) {
@@ -129,7 +134,7 @@ public class GameClient {
 
     private ClientListener clientListener = new ClientListener() {
         @Override
-        public void onConnectionLost() {
+        public void onConnectionLost(Exception e) {
 
         }
     };
@@ -138,6 +143,6 @@ public class GameClient {
     }
 
     public interface ClientListener {
-        void onConnectionLost();
+        void onConnectionLost(Exception e);
     }
 }

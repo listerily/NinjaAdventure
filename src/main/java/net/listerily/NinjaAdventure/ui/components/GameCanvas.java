@@ -10,6 +10,7 @@ public class GameCanvas extends Canvas {
     int page = 0;
     public GameCanvas() {
         setIgnoreRepaint(true);
+        setSize(1536, 1080);
         new Timer(20, e -> paintEvent()).start();
     }
 

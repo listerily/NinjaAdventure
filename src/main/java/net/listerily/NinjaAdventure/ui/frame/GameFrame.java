@@ -3,6 +3,7 @@ package net.listerily.NinjaAdventure.ui.frame;
 import net.listerily.NinjaAdventure.App;
 import net.listerily.NinjaAdventure.GameLaunchEvent;
 import net.listerily.NinjaAdventure.GameManager;
+import net.listerily.NinjaAdventure.client.GameClient;
 import net.listerily.NinjaAdventure.ui.components.ErrorPanel;
 import net.listerily.NinjaAdventure.ui.components.GamingPanel;
 import net.listerily.NinjaAdventure.ui.components.LoadingPanel;
@@ -27,6 +28,8 @@ public class GameFrame extends AppBaseFrame {
     public void launchGame(GameLaunchOptions options) {
         showLoadingPanel("Starting Game");
         GameManager gameManager = app.getGameManager();
+        gameManager.renewInstance();
+        gameManager.setClientListener(e -> showErrorPanel(e.toString()));
         if (options.hosting) {
             gameManager.setGameStateListener(event -> {
                 if (event.type == GameLaunchEvent.EVENT_FAILED) {

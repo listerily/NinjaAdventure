@@ -25,7 +25,6 @@ public class GamingPanel extends JPanel {
     public void initialize() {
         canvas = new GameCanvas();
         this.add(canvas);
-        canvas.setSize(getSize());
         canvas.createBufferStrategy(2);
     }
 }

@@ -9,6 +9,6 @@ public class ServerMessageHandler {
     }
 
     public SCMessage handle(SCMessage message) {
-        return null;
+        return new SCMessage(SCMessage.MSG_UNDEFINED, "Hello from client.");
     }
 }

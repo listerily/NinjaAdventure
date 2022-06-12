@@ -12,6 +12,6 @@ public class ClientMessageHandler {
     }
 
     public SCMessage handle(UUID clientUUID, SCMessage message) {
-        return null;
+        return new SCMessage(SCMessage.MSG_UNDEFINED, "Hello from server.");
     }
 }

@@ -73,8 +73,9 @@ public class GameFrame extends AppBaseFrame {
     }
 
     public void showGamingPanel() {
+        GameManager gameManager = app.getGameManager();
         showPanel(gamingPanel);
-        gamingPanel.initialize();
+        gamingPanel.initialize(app, gameManager.getClientDataManager());
         this.repaint();
     }
 

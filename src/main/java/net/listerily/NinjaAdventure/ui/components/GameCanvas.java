@@ -1,14 +1,20 @@
 package net.listerily.NinjaAdventure.ui.components;
 
+import net.listerily.NinjaAdventure.App;
+import net.listerily.NinjaAdventure.client.ClientDataManager;
+import net.listerily.NinjaAdventure.rendering.Renderer;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.image.BufferStrategy;
 
 public class GameCanvas extends Canvas {
     private boolean repaintInProgress = false;
-    Color[] back = {Color.BLACK, Color.WHITE};
-    int page = 0;
-    public GameCanvas() {
+    private ClientDataManager clientDataManager;
+    private Renderer renderer;
+    public GameCanvas(App app, ClientDataManager clientDataManager) {
+        this.clientDataManager = clientDataManager;
+        this.renderer = new Renderer(app);
         setIgnoreRepaint(true);
         setSize(1536, 1080);
         new Timer(20, e -> paintEvent()).start();
@@ -16,11 +22,9 @@ public class GameCanvas extends Canvas {
 
     public void paintGraphics(Graphics graphics) {
         Dimension size = getSize();
-        page++;
-        page %= 2;
-        graphics.setColor(back[page]);
+        graphics.setColor(Color.BLACK);
         graphics.fillRect(0, 0, size.width, size.height);
-        graphics.fillRect(0, 0, 900, 800);
+        renderer.drawGraphics(clientDataManager, graphics);
     }
 
     public synchronized void paintEvent() {

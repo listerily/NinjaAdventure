@@ -131,6 +131,9 @@ public class GameClient {
         messageQueue.put(message);
     }
 
+    public ClientDataManager getClientDataManager() {
+        return clientDataManager;
+    }
 
     private ClientListener clientListener = new ClientListener() {
         @Override

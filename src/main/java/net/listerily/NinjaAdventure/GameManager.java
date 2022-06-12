@@ -1,5 +1,6 @@
 package net.listerily.NinjaAdventure;
 
+import net.listerily.NinjaAdventure.client.ClientDataManager;
 import net.listerily.NinjaAdventure.client.GameClient;
 import net.listerily.NinjaAdventure.server.GameServer;
 
@@ -106,5 +107,9 @@ public class GameManager {
 
     public void setClientListener(GameClient.ClientListener clientListener) {
         gameClient.setClientListener(clientListener);
+    }
+
+    public ClientDataManager getClientDataManager() {
+        return gameClient.getClientDataManager();
     }
 }

@@ -32,7 +32,7 @@ public class AppBaseFrame extends JFrame {
             throw new RuntimeException(e);
         }
 
-        setSize(1536, 1080);
+        setSize(1920, 1152);
         addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {

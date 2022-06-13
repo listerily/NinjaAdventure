@@ -4,6 +4,7 @@ import org.javatuples.Pair;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
+import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
@@ -16,7 +17,7 @@ public class CachedResources {
     }
 
     private final HashMap<String, Image> imageCache = new HashMap<>();
-    public Image readImage(String name) throws IOException {
+    public synchronized Image readImage(String name) throws IOException {
         synchronized (imageCache) {
             if (imageCache.containsKey(name)) {
                 return imageCache.get(name);
@@ -27,8 +28,27 @@ public class CachedResources {
         }
     }
 
+    private final HashMap<String, String> textCache = new HashMap<>();
+    public synchronized String readText(String name) throws IOException {
+        synchronized (textCache) {
+            if (textCache.containsKey(name)) {
+                return textCache.get(name);
+            }
+            StringBuilder stringBuilder = new StringBuilder();
+            BufferedInputStream inputStream = new BufferedInputStream(resourceManager.openResource(name));
+            int bytesRead;
+            byte[] buffer = new byte[1024];
+            while ((bytesRead = inputStream.read(buffer)) != -1) {
+                stringBuilder.append(new String(buffer, 0, bytesRead));
+            }
+            String result = stringBuilder.toString();
+            textCache.put(name, result);
+            return result;
+        }
+    }
+
     private final HashMap<Pair<Integer, String>, Font> fontCache = new HashMap<>();
-    public Font readFont(int format, String name) throws IOException, FontFormatException {
+    public synchronized Font readFont(int format, String name) throws IOException, FontFormatException {
         synchronized (fontCache) {
             Pair<Integer, String> keyPair = new Pair<>(format, name);
             if (fontCache.containsKey(keyPair)) {
@@ -43,7 +63,7 @@ public class CachedResources {
     }
 
     private final HashMap<Object, Object> universalCache = new HashMap<>();
-    public Object readUniversal(Object key, Function<Object, Object> func) {
+    public synchronized Object readUniversal(Object key, Function<Object, Object> func) {
         synchronized (universalCache) {
             if (universalCache.containsKey(key)) {
                 return universalCache.get(key);

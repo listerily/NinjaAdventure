@@ -16,7 +16,7 @@ public class GameCanvas extends Canvas {
         this.clientDataManager = clientDataManager;
         this.renderer = new Renderer(app);
         setIgnoreRepaint(true);
-        setSize(1536, 1080);
+        setSize(1920, 1152);
         new Timer(20, e -> paintEvent()).start();
     }
 

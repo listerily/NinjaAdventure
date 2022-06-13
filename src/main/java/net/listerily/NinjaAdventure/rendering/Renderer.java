@@ -13,7 +13,6 @@ public class Renderer {
     }
 
     public void drawGraphics(ClientDataManager clientDataManager, Graphics graphics) {
-        graphics.setColor(Color.WHITE);
-        graphics.drawRect(0, 0, 400, 400);
+
     }
 }

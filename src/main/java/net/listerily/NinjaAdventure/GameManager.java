@@ -4,7 +4,7 @@ import net.listerily.NinjaAdventure.client.ClientDataManager;
 import net.listerily.NinjaAdventure.client.GameClient;
 import net.listerily.NinjaAdventure.server.GameServer;
 
-import java.io.IOException;
+import java.util.logging.Level;
 
 public class GameManager {
     private final App app;
@@ -36,19 +36,28 @@ public class GameManager {
             public void run() {
                 super.run();
                 try {
+                    app.getAppLogger().log(Level.INFO, "Starting game as server.");
+                    app.getAppLogger().log(Level.INFO, "Starting server service.");
                     gameStateListener.onEvent(new GameLaunchEvent(GameLaunchEvent.EVENT_STARTING_SERVER));
                     gameServer.startService(port);
+                    app.getAppLogger().log(Level.INFO, "Server service started.");
                     gameStateListener.onEvent(new GameLaunchEvent(GameLaunchEvent.EVENT_STARTED_SERVER));
+                    app.getAppLogger().log(Level.INFO, "Connecting client to server.");
                     gameStateListener.onEvent(new GameLaunchEvent(GameLaunchEvent.EVENT_CONNECTING));
                     gameClient = new GameClient(app);
                     gameClient.connect("127.0.0.1", port);
+                    app.getAppLogger().log(Level.INFO, "Client connected.");
                     gameStateListener.onEvent(new GameLaunchEvent(GameLaunchEvent.EVENT_CONNECTED));
-                    gameStateListener.onEvent(new GameLaunchEvent(GameLaunchEvent.EVENT_LOADING_DATA));
-                    gameClient.startListening();
-                    gameStateListener.onEvent(new GameLaunchEvent(GameLaunchEvent.EVENT_LOADED_DATA));
+                    app.getAppLogger().log(Level.INFO, "Initializing client.");
+                    gameStateListener.onEvent(new GameLaunchEvent(GameLaunchEvent.EVENT_INITIALIZING_CLIENT));
+                    gameClient.initialize();
+                    app.getAppLogger().log(Level.INFO, "Initialized client.");
+                    gameStateListener.onEvent(new GameLaunchEvent(GameLaunchEvent.EVENT_INITIALIZED_CLIENT));
                     status = STATUS_SERVER;
+                    app.getAppLogger().log(Level.INFO, "Game Launched.");
                     gameStateListener.onEvent(new GameLaunchEvent(GameLaunchEvent.EVENT_SUCCEED));
-                } catch (IOException e) {
+                } catch (Exception e) {
+                    app.getAppLogger().log(Level.SEVERE, "Failed to start game as server. ", e);
                     gameStateListener.onEvent(new GameLaunchEvent(GameLaunchEvent.EVENT_FAILED, e));
                 }
             }
@@ -64,15 +73,23 @@ public class GameManager {
             public void run() {
                 super.run();
                 try {
+                    app.getAppLogger().log(Level.INFO, "Starting game as client.");
+                    app.getAppLogger().log(Level.INFO, "Connecting client to server.");
                     gameStateListener.onEvent(new GameLaunchEvent(GameLaunchEvent.EVENT_CONNECTING));
+                    gameClient = new GameClient(app);
                     gameClient.connect(address, port);
+                    app.getAppLogger().log(Level.INFO, "Client connected.");
                     gameStateListener.onEvent(new GameLaunchEvent(GameLaunchEvent.EVENT_CONNECTED));
-                    gameStateListener.onEvent(new GameLaunchEvent(GameLaunchEvent.EVENT_LOADING_DATA));
-                    gameClient.startListening();
-                    gameStateListener.onEvent(new GameLaunchEvent(GameLaunchEvent.EVENT_LOADED_DATA));
+                    app.getAppLogger().log(Level.INFO, "Initializing client.");
+                    gameStateListener.onEvent(new GameLaunchEvent(GameLaunchEvent.EVENT_INITIALIZING_CLIENT));
+                    gameClient.initialize();
+                    app.getAppLogger().log(Level.INFO, "Initialized client.");
+                    gameStateListener.onEvent(new GameLaunchEvent(GameLaunchEvent.EVENT_INITIALIZED_CLIENT));
                     status = STATUS_CLIENT;
+                    app.getAppLogger().log(Level.INFO, "Game Launched.");
                     gameStateListener.onEvent(new GameLaunchEvent(GameLaunchEvent.EVENT_SUCCEED));
-                } catch (IOException  e) {
+                } catch (Exception  e) {
+                    app.getAppLogger().log(Level.SEVERE, "Failed to start game as client. ", e);
                     gameStateListener.onEvent(new GameLaunchEvent(GameLaunchEvent.EVENT_FAILED, e));
                 }
             }

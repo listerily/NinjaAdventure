@@ -3,14 +3,12 @@ package net.listerily.NinjaAdventure.ui.frame;
 import net.listerily.NinjaAdventure.App;
 import net.listerily.NinjaAdventure.GameLaunchEvent;
 import net.listerily.NinjaAdventure.GameManager;
-import net.listerily.NinjaAdventure.client.GameClient;
 import net.listerily.NinjaAdventure.ui.components.ErrorPanel;
 import net.listerily.NinjaAdventure.ui.components.GamingPanel;
 import net.listerily.NinjaAdventure.ui.components.LoadingPanel;
 
 import javax.swing.*;
 import java.awt.*;
-import java.util.concurrent.Executors;
 
 public class GameFrame extends AppBaseFrame {
     private final GamingPanel gamingPanel;
@@ -19,7 +17,7 @@ public class GameFrame extends AppBaseFrame {
     public GameFrame(App app) {
         super(app);
 
-        setMinimumSize(new Dimension(1080, 720));
+        setMinimumSize(new Dimension(1280, 768));
         loadingPanel = new LoadingPanel(this);
         errorPanel = new ErrorPanel(this);
         gamingPanel = new GamingPanel();

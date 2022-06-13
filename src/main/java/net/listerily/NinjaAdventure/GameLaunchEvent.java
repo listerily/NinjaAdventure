@@ -10,8 +10,8 @@ public class GameLaunchEvent {
     public static final int EVENT_STARTED_SERVER = 4;
     public static final int EVENT_CONNECTING = 5;
     public static final int EVENT_CONNECTED = 6;
-    public static final int EVENT_LOADING_DATA = 7;
-    public static final int EVENT_LOADED_DATA = 8;
+    public static final int EVENT_INITIALIZING_CLIENT = 7;
+    public static final int EVENT_INITIALIZED_CLIENT = 8;
 
     public GameLaunchEvent(int type) {
         this.type = type;
@@ -37,10 +37,10 @@ public class GameLaunchEvent {
                 return "Starting Server";
             case EVENT_STARTED_SERVER:
                 return "Started Server";
-            case EVENT_LOADING_DATA:
-                return "Loading Data";
-            case EVENT_LOADED_DATA:
-                return "Loaded Data";
+            case EVENT_INITIALIZING_CLIENT:
+                return "Initializing Client";
+            case EVENT_INITIALIZED_CLIENT:
+                return "Initialized Client";
             case EVENT_UNDEFINED:
             default:
                 throw new IllegalStateException("Unexpected value: " + type);

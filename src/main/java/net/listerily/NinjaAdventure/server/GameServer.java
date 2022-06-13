@@ -22,6 +22,7 @@ public class GameServer {
     private ExecutorService clientMessageExecutor;
     private ClientMessageHandler clientMessageHandler;
     private ServerDataManager serverDataManager;
+    private Thread serverDataTickingThread;
     private static final int MAX_CLIENTS = 4;
 
     private int aliveConnections;
@@ -40,9 +41,11 @@ public class GameServer {
             this.messageConsumerLookup = new HashMap<>();
             this.messageProducerLookup = new HashMap<>();
             this.aliveConnections = 0;
-            this.serverDataManager = new ServerDataManager();
+            this.serverDataManager = new ServerDataManager(app);
             this.clientMessageHandler = new ClientMessageHandler(serverDataManager);
             this.serverDataManager.initialize();
+            this.serverDataTickingThread = new ServerDataTickingThread();
+            this.serverDataTickingThread.start();
         }
         startListening();
     }
@@ -146,15 +149,8 @@ public class GameServer {
             messageConsumerLookup.put(clientUUID, messageConsumer);
             messageProducer.start();
             messageConsumer.start();
+            serverDataManager.onClientConnected(clientUUID);
         } catch(IOException e) {
-            if (messageProducerLookup.containsKey(clientUUID)) {
-                messageProducerLookup.get(clientUUID).interrupt();
-                messageProducerLookup.remove(clientUUID);
-            }
-            if (messageConsumerLookup.containsKey(clientUUID)) {
-                messageConsumerLookup.get(clientUUID).interrupt();
-                messageConsumerLookup.remove(clientUUID);
-            }
             messageQueueLookup.remove(clientUUID);
             socketLookup.remove(clientUUID, socket);
             --aliveConnections;
@@ -167,6 +163,7 @@ public class GameServer {
     }
 
     private synchronized void terminateClient(UUID clientUUID) {
+        serverDataManager.onClientDisconnected(clientUUID);
         messageConsumerLookup.get(clientUUID).interrupt();
         messageConsumerLookup.remove(clientUUID);
         messageProducerLookup.get(clientUUID).interrupt();
@@ -181,6 +178,7 @@ public class GameServer {
     }
 
     public synchronized void terminateService() throws IOException {
+        this.serverDataTickingThread.interrupt();
         clientMessageExecutor.shutdownNow();
         // shutdown producer and consumer executions
         for (UUID key : messageProducerLookup.keySet()) {
@@ -212,5 +210,27 @@ public class GameServer {
 
     public interface ServerListener {
         void onTerminateClientService(UUID uuid);
+    }
+
+    private class ServerDataTickingThread extends Thread {
+        @Override
+        public void run() {
+            super.run();
+            while (true) {
+                serverDataManager.tick(message -> messageQueueLookup.forEach((uuid, queue) -> {
+                    try {
+                        queue.put(message);
+                    } catch (InterruptedException e) {
+                        app.getAppLogger().log(Level.WARNING, "SERVER: data ticking thread interrupted. Ignoring message.", e);
+                    }
+                }));
+                try {
+                    sleep(50);
+                } catch (InterruptedException e) {
+                    app.getAppLogger().log(Level.WARNING, "SERVER: data ticking thread interrupted.", e);
+                    return;
+                }
+            }
+        }
     }
 }

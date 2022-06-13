@@ -33,7 +33,7 @@ public class GameClient {
         socket.connect(new InetSocketAddress(address, port));
     }
 
-    public void startListening() {
+    public void initialize() {
         ObjectOutputStream outputStream;
         ObjectInputStream inputStream;
         try {
@@ -48,7 +48,8 @@ public class GameClient {
             app.getAppLogger().log(Level.INFO, "CLIENT: Connected to server. UUID=" + uuid + ".");
             messageQueue = new LinkedBlockingQueue<>();
             clientMessageExecutor = Executors.newFixedThreadPool(1);
-            clientDataManager = new ClientDataManager();
+            clientDataManager = new ClientDataManager(app);
+            clientDataManager.initialize(inputStream, outputStream);
             serverMessageHandler = new ServerMessageHandler(clientDataManager);
         } catch (IOException | ClassNotFoundException e) {
             app.getAppLogger().log(Level.SEVERE, "CLIENT: IO Error while reading / writing message. Terminating myself.", e);

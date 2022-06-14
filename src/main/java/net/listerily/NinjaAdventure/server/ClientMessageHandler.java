@@ -22,12 +22,24 @@ public class ClientMessageHandler {
             return handleClientInitializationRequest(clientUUID, message);
         } else if (message.type == SCMessage.MSG_CLIENT_HEARTBEAT) {
             return handleClientHeartbeatMessage();
+        } else if (message.type == SCMessage.MSG_PLAYER_MOVE) {
+            return handlePlayerMoveRequest(clientUUID, (PlayerMoveData) message.obj);
         }
         return null;
     }
 
     private SCMessage handleClientHeartbeatMessage() {
         return new SCMessage(SCMessage.MSG_CLIENT_HEARTBEAT_RESPONSE);
+    }
+
+    private SCMessage handlePlayerMoveRequest(UUID clientUUID, PlayerMoveData playerMoveData) {
+        synchronized (serverDataManager.getWorld()) {
+            world = serverDataManager.getWorld();
+            Player player = world.findPlayer(clientUUID);
+            player.movePosition(playerMoveData.dx, playerMoveData.dy);
+        }
+        PlayerData playerData = generatePlayerData(clientUUID);
+        return new SCMessage(SCMessage.MSG_UPDATE_PLAYER_DATA, playerData.clone());
     }
 
     private SCMessage handleClientInitializationRequest(UUID clientUUID, SCMessage message) {
@@ -41,18 +53,7 @@ public class ClientMessageHandler {
             }
             player.setCharacter(playerInfo.character);
             player.setNickname(playerInfo.nickname);
-            clientInitializationData.playerData = new PlayerData();
-            clientInitializationData.playerData.position = player.getPosition();
-            clientInitializationData.playerData.uuid = clientUUID;
-            clientInitializationData.playerData.health = player.getHealth();
-            clientInitializationData.playerData.nickname = player.getNickname();
-            clientInitializationData.playerData.character = player.getCharacter();
-            clientInitializationData.playerData.facing = player.getFacing();
-            clientInitializationData.playerData.hurting = player.isHurting();
-            clientInitializationData.playerData.actionState = player.getActionState();
-            clientInitializationData.playerData.maxHealth = player.getMaxHealth();
-            clientInitializationData.playerData.dead = player.isDead();
-
+            clientInitializationData.playerData = generatePlayerData(clientUUID);
             Scene scene = player.getScene();
             HashMap<String, Layer> layers = scene.getLayers();
             Layer[] layerArray = new Layer[layers.size()];
@@ -102,5 +103,24 @@ public class ClientMessageHandler {
             clientInitializationData.sceneData.tileSheet = tileData;
         }
         return new SCMessage(SCMessage.MSG_SERVER_RESPONSE_INIT, clientInitializationData);
+    }
+
+    private PlayerData generatePlayerData(UUID clientUUID) {
+        synchronized (serverDataManager.getWorld()) {
+            world = serverDataManager.getWorld();
+            Player player = world.findPlayer(clientUUID);
+            PlayerData playerData = new PlayerData();
+            playerData.position = player.getPosition();
+            playerData.uuid = clientUUID;
+            playerData.health = player.getHealth();
+            playerData.nickname = player.getNickname();
+            playerData.character = player.getCharacter();
+            playerData.facing = player.getFacing();
+            playerData.hurting = player.isHurting();
+            playerData.actionState = player.getActionState();
+            playerData.maxHealth = player.getMaxHealth();
+            playerData.dead = player.isDead();
+            return playerData.clone();
+        }
     }
 }

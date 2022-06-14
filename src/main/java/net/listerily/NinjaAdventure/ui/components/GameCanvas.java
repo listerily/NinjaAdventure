@@ -18,6 +18,7 @@ public class GameCanvas extends Canvas {
         setIgnoreRepaint(true);
         setSize(1920, 1152);
         new Timer(20, e -> paintEvent()).start();
+        setFocusable(false);
     }
 
     public void paintGraphics(Graphics graphics) {

@@ -1,5 +1,6 @@
 package net.listerily.NinjaAdventure;
 
+import net.listerily.NinjaAdventure.client.ClientController;
 import net.listerily.NinjaAdventure.client.ClientDataManager;
 import net.listerily.NinjaAdventure.client.GameClient;
 import net.listerily.NinjaAdventure.server.GameServer;
@@ -141,5 +142,9 @@ public class GameManager {
 
     public ClientDataManager getClientDataManager() {
         return gameClient.getClientDataManager();
+    }
+
+    public ClientController getClientController() {
+        return gameClient.getClientController();
     }
 }

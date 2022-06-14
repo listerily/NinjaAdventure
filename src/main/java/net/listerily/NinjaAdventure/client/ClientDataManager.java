@@ -40,4 +40,8 @@ public class ClientDataManager {
     public synchronized PlayerData getSelfPlayerClone() {
         return selfPlayer.clone();
     }
+
+    public synchronized void updatePlayerData(PlayerData playerData) {
+        this.selfPlayer = playerData.clone();
+    }
 }

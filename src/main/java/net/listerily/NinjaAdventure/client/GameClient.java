@@ -23,6 +23,7 @@ public class GameClient {
     private ServerMessageHandler serverMessageHandler;
     private LinkedBlockingQueue<SCMessage> messageQueue;
     private ExecutorService clientMessageExecutor;
+    private ClientController clientController;
 
     public GameClient(App app) {
         this.app = app;
@@ -52,6 +53,13 @@ public class GameClient {
             clientDataManager = new ClientDataManager(app);
             clientDataManager.initialize(inputStream, outputStream);
             serverMessageHandler = new ServerMessageHandler(clientDataManager);
+            clientController = new ClientController(message -> {
+                try {
+                    submitMessage(message);
+                } catch (InterruptedException e) {
+                    app.getAppLogger().log(Level.WARNING, "CLIENT: Message Queue interrupted. Ignoring controller's message.", e);
+                }
+            });
         } catch (IOException | ClassNotFoundException e) {
             app.getAppLogger().log(Level.SEVERE, "CLIENT: IO Error while reading / writing message. Terminating myself.", e);
             terminateClient(e);
@@ -161,5 +169,9 @@ public class GameClient {
 
     public interface ClientListener {
         void onConnectionLost(Exception e);
+    }
+
+    public ClientController getClientController() {
+        return clientController;
     }
 }

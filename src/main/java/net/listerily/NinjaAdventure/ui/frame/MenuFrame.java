@@ -4,6 +4,7 @@ import net.listerily.NinjaAdventure.App;
 import net.listerily.NinjaAdventure.resources.CachedResources;
 import net.listerily.NinjaAdventure.resources.ResourceManager;
 import net.listerily.NinjaAdventure.ui.dialog.JoinDialog;
+import net.listerily.NinjaAdventure.ui.dialog.OptionsDialog;
 
 import javax.swing.*;
 import java.awt.*;
@@ -77,10 +78,22 @@ public class MenuFrame extends AppBaseFrame {
         joinGameButton.addActionListener(e -> onJoinGameClicked());
         buttonsPanel.add(joinGameButton, constraints);
 
-        JButton exitGameButton = new JButton("Exit Game");
+        JButton optionsButton = new JButton("OPTIONS");
         constraints.fill = GridBagConstraints.HORIZONTAL;
         constraints.gridx = 0;
         constraints.gridy = 2;
+        optionsButton.setFont(getTextFont().deriveFont(50f));
+        optionsButton.setBackground(new Color(52,52,52));
+        optionsButton.setForeground(Color.WHITE);
+        optionsButton.setFocusPainted(false);
+        optionsButton.setBorderPainted(false);
+        optionsButton.addActionListener(e -> onOptionsClicked());
+        buttonsPanel.add(optionsButton, constraints);
+
+        JButton exitGameButton = new JButton("Exit Game");
+        constraints.fill = GridBagConstraints.HORIZONTAL;
+        constraints.gridx = 0;
+        constraints.gridy = 3;
         exitGameButton.setFont(getTextFont().deriveFont(50f));
         exitGameButton.setBackground(new Color(52,52,52));
         exitGameButton.setForeground(Color.WHITE);
@@ -102,6 +115,11 @@ public class MenuFrame extends AppBaseFrame {
 
     private void onExitClicked() {
         System.exit(0);
+    }
+
+    private void onOptionsClicked() {
+        OptionsDialog optionsDialog = new OptionsDialog(app);
+        optionsDialog.setVisible(true);
     }
 
     @Override

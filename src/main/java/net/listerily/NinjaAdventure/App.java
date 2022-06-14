@@ -10,10 +10,12 @@ public class App {
     private final ResourceManager resourceManager;
     private final WindowManager windowManager;
     private final GameManager gameManager;
+    private final OptionsManager optionsManager;
 
     public App() {
         logger = Logger.getLogger("NinjaAdventure");
         resourceManager = new ResourceManager(this);
+        optionsManager = new OptionsManager(this);
         windowManager = new WindowManager(this);
         gameManager = new GameManager(this);
     }
@@ -36,5 +38,9 @@ public class App {
 
     public GameManager getGameManager() {
         return gameManager;
+    }
+
+    public OptionsManager getOptionsManager() {
+        return optionsManager;
     }
 }

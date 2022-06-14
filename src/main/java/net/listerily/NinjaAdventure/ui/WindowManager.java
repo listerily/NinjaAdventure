@@ -2,16 +2,13 @@ package net.listerily.NinjaAdventure.ui;
 
 import net.listerily.NinjaAdventure.App;
 import net.listerily.NinjaAdventure.ui.frame.GameFrame;
-import net.listerily.NinjaAdventure.ui.dialog.JoinDialog;
 import net.listerily.NinjaAdventure.ui.frame.MenuFrame;
 
 public class WindowManager {
-    private MenuFrame menuFrame;
-    private GameFrame gameFrame;
-    private final App app;
+    private final MenuFrame menuFrame;
+    private final GameFrame gameFrame;
 
     public WindowManager(App app) {
-        this.app = app;
         this.menuFrame = new MenuFrame(app);
         this.gameFrame = new GameFrame(app);
     }

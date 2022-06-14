@@ -9,7 +9,8 @@ public class PlayerData implements Serializable, Cloneable {
     public Position position;
     public UUID uuid;
     public int health;
-
+    public String nickname;
+    public String character;
     @Override
     public PlayerData clone() {
         try {
@@ -18,6 +19,8 @@ public class PlayerData implements Serializable, Cloneable {
                 clone.position = position.clone();
             clone.uuid = uuid;
             clone.health = health;
+            clone.nickname = nickname;
+            clone.character = character;
             return clone;
         } catch (CloneNotSupportedException e) {
             throw new AssertionError();

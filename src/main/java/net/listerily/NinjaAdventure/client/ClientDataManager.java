@@ -8,7 +8,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
 public class ClientDataManager {
-    private App app;
+    private final App app;
     private SceneData currentSceneData;
     private PlayerData selfPlayer;
 
@@ -17,7 +17,10 @@ public class ClientDataManager {
     }
 
     public void initialize(ObjectInputStream inputStream, ObjectOutputStream outputStream) throws IOException, ClassNotFoundException {
-        outputStream.writeObject(new SCMessage(SCMessage.MSG_CLIENT_REQUEST_INIT));
+        PlayerInfo playerInfo = new PlayerInfo();
+        playerInfo.character = app.getOptionsManager().getCharacter();
+        playerInfo.nickname = app.getOptionsManager().getNickname();
+        outputStream.writeObject(new SCMessage(SCMessage.MSG_CLIENT_REQUEST_INIT, playerInfo));
         outputStream.flush();
         SCMessage response;
         do {

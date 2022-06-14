@@ -19,7 +19,7 @@ public class ClientMessageHandler {
 
     public SCMessage handle(UUID clientUUID, SCMessage message) {
         if (message.type == SCMessage.MSG_CLIENT_REQUEST_INIT) {
-            return handleClientInitializationRequest(clientUUID);
+            return handleClientInitializationRequest(clientUUID, message);
         } else if (message.type == SCMessage.MSG_CLIENT_HEARTBEAT) {
             return handleClientHeartbeatMessage();
         }
@@ -30,18 +30,23 @@ public class ClientMessageHandler {
         return new SCMessage(SCMessage.MSG_CLIENT_HEARTBEAT_RESPONSE);
     }
 
-    private SCMessage handleClientInitializationRequest(UUID clientUUID) {
+    private SCMessage handleClientInitializationRequest(UUID clientUUID, SCMessage message) {
         ClientInitializationData clientInitializationData = new ClientInitializationData();
+        PlayerInfo playerInfo = (PlayerInfo) message.obj;
         synchronized (serverDataManager.getWorld()) {
             world = serverDataManager.getWorld();
             Player player = world.findPlayer(clientUUID);
             if (player == null) {
                 throw new IllegalStateException("Unable to find player with UUID=" + clientUUID + ".");
             }
+            player.setCharacter(playerInfo.character);
+            player.setNickname(playerInfo.nickname);
             clientInitializationData.playerData = new PlayerData();
             clientInitializationData.playerData.position = player.getPosition();
             clientInitializationData.playerData.uuid = clientUUID;
             clientInitializationData.playerData.health = player.getHealth();
+            clientInitializationData.playerData.nickname = player.getNickname();
+            clientInitializationData.playerData.character = player.getCharacter();
             Scene scene = player.getScene();
             HashMap<String, Layer> layers = scene.getLayers();
             Layer[] layerArray = new Layer[layers.size()];

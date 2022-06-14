@@ -33,6 +33,7 @@ public class Renderer {
             for (int x = 0; x < sceneData.width; ++x) {
                 for (int y = 0; y < sceneData.height; ++y) {
                     if (tileData != null && tileData[x][y] != null) {
+                        // Render tiles lower
                         if (tileData[x][y].tileStackLower != null) {
                             for (String tileId : tileData[x][y].tileStackLower) {
                                 try {
@@ -43,6 +44,11 @@ public class Renderer {
                                 }
                             }
                         }
+                        // render this player
+                        if (playerData != null) {
+
+                        }
+                        // render tiles upper
                         if (tileData[x][y].tileStackUpper != null) {
                             for (String tileId : tileData[x][y].tileStackUpper) {
                                 try {

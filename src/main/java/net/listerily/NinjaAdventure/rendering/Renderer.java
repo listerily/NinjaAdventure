@@ -53,11 +53,11 @@ public class Renderer {
             if (sceneData.playerData != null) {
                 for (PlayerData otherPlayerData : sceneData.playerData) {
                     if (otherPlayerData.uuid != playerData.uuid) {
-                        drawPlayer(cachedResources, graphics, otherPlayerData, tileWidth, tileHeight, false);
+                        drawPlayer(cachedResources, graphics, otherPlayerData, tileWidth, tileHeight, true);
                     }
                 }
             }
-            drawPlayer(cachedResources, graphics, playerData, tileWidth, tileHeight, true);
+            drawPlayer(cachedResources, graphics, playerData, tileWidth, tileHeight, false);
         }
 
         for (int x = 0; x < sceneData.width; ++x) {
@@ -70,14 +70,17 @@ public class Renderer {
                 }
             }
         }
-        drawHUD(cachedResources, graphics, tileWidth, tileHeight, size);
+
+        if (playerData != null) {
+            drawHUD(cachedResources, graphics, tileWidth, tileHeight, playerData);
+        }
     }
 
     public void drawPlayer(CachedResources cachedResources, Graphics graphics, PlayerData playerData, int tileWidth, int tileHeight, boolean other) {
         try {
             if (playerData.dead) {
                 BufferedImage deadImage = cachedResources.readImage("Characters/" + playerData.character + "/SeparateAnim/Dead.png");
-                drawPlayerImage(deadImage, graphics, playerData, tileWidth, tileHeight, other);
+                drawPlayerImage(cachedResources, deadImage, graphics, playerData, tileWidth, tileHeight, other);
             } else if (playerData.actionState == Player.ACTION_IDLE) {
                 BufferedImage idleImage = cachedResources.readImage("Characters/" + playerData.character + "/SeparateAnim/Idle.png");
                 BufferedImage targetImage;
@@ -93,7 +96,7 @@ public class Renderer {
                     app.getAppLogger().log(Level.WARNING, "Illegal facing " + playerData.facing + ", skipped drawing.");
                     return;
                 }
-                drawPlayerImage(targetImage, graphics, playerData, tileWidth, tileHeight, other);
+                drawPlayerImage(cachedResources, targetImage, graphics, playerData, tileWidth, tileHeight, other);
             } else if (playerData.actionState == Player.ACTION_WALKING) {
                 BufferedImage idleImage = cachedResources.readImage("Characters/" + playerData.character + "/SeparateAnim/Walk.png");
                 BufferedImage targetImage;
@@ -109,7 +112,7 @@ public class Renderer {
                     app.getAppLogger().log(Level.WARNING, "Illegal facing " + playerData.facing + ", skipped drawing.");
                     return;
                 }
-                drawPlayerImage(targetImage, graphics, playerData, tileWidth, tileHeight, other);
+                drawPlayerImage(cachedResources, targetImage, graphics, playerData, tileWidth, tileHeight, other);
             }
         } catch (IOException e) {
             app.getAppLogger().log(Level.WARNING, "IO Error while reading character resource. Skipped drawing.", e);
@@ -118,16 +121,29 @@ public class Renderer {
         }
     }
 
-    public void drawPlayerImage(BufferedImage image, Graphics graphics, PlayerData playerData, int tileWidth, int tileHeight, boolean other) throws IOException, FontFormatException {
+    public void drawPlayerImage(CachedResources cachedResources, BufferedImage image, Graphics graphics, PlayerData playerData, int tileWidth, int tileHeight, boolean other) throws IOException, FontFormatException {
         graphics.drawImage(image, (int) (playerData.position.x * tileWidth - tileWidth * 0.5), (int) (playerData.position.y * tileWidth - tileWidth * 0.5),
                 tileWidth, tileHeight, null);
-        Font textFont = app.getResourceManager().getCachedResources().readFont(Font.TRUETYPE_FONT, "HUD/Font/NormalFont.ttf").deriveFont(18f);
+        Font textFont = cachedResources.readFont(Font.TRUETYPE_FONT, "HUD/Font/NormalFont.ttf").deriveFont(18f);
         graphics.setFont(textFont);
         FontMetrics metrics = graphics.getFontMetrics(textFont);
         graphics.setColor(Color.WHITE);
         graphics.drawString(playerData.nickname,
                 (int) (playerData.position.x * tileWidth - metrics.stringWidth(playerData.nickname) / 2),
-                (int) (playerData.position.y * tileWidth - tileWidth * 0.5));
+                (int) (playerData.position.y * tileWidth - tileWidth * 0.55));
+        if (other) {
+            BufferedImage lifeBarUnder = cachedResources.readImage("HUD/LifeBarMiniUnder.png");
+            BufferedImage lifeBarUpper = cachedResources.readImage("HUD/LifeBarMiniProgress.png");
+            int progress = (int) (18.0 * playerData.health / playerData.maxHealth);
+            graphics.drawImage(lifeBarUnder,
+                    (int) (playerData.position.x * tileWidth - tileWidth * 0.5),
+                    (int) (playerData.position.y * tileWidth - tileWidth * 0.5),
+                    tileWidth, tileHeight / 6, null);
+            graphics.drawImage(lifeBarUpper.getSubimage(0, 0, progress, 4),
+                    (int) (playerData.position.x * tileWidth - tileWidth * 0.5),
+                    (int) (playerData.position.y * tileWidth - tileWidth * 0.5),
+                    (int) (tileWidth * (progress / 18.0)), tileHeight / 6, null);
+        }
     }
 
     public void drawTiles(CachedResources cachedResources, Graphics graphics, String[] tileStack, int tileWidth, int tileHeight, int x, int y) {
@@ -140,7 +156,25 @@ public class Renderer {
             }
         }
     }
-    public void drawHUD(CachedResources cachedResources, Graphics graphics, int tileWidth, int tileHeight, Dimension size) {
-
+    public void drawHUD(CachedResources cachedResources, Graphics graphics, int tileWidth, int tileHeight, PlayerData playerData) {
+        try {
+            BufferedImage heartImage = cachedResources.readImage("HUD/Heart.png");
+            int hp = playerData.health;
+            for (int i = 0; i < 3; ++i) {
+                int state = 0;
+                if (hp > 4) {
+                    state = 4;
+                    hp -= 4;
+                } else {
+                    state = hp;
+                    hp = 0;
+                }
+                graphics.drawImage(heartImage.getSubimage(16 * (4 - state), 0, 16, 16),
+                        i * tileWidth + tileWidth / 4, tileHeight / 4,
+                        tileWidth, tileHeight, null);
+            }
+        } catch (IOException e) {
+            app.getAppLogger().log(Level.WARNING, "IO Error while reading resource. Skipped drawing HUD.", e);
+        }
     }
 }

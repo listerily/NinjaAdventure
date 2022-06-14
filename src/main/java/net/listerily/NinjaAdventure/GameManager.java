@@ -4,6 +4,7 @@ import net.listerily.NinjaAdventure.client.ClientDataManager;
 import net.listerily.NinjaAdventure.client.GameClient;
 import net.listerily.NinjaAdventure.server.GameServer;
 
+import java.io.IOException;
 import java.util.logging.Level;
 
 public class GameManager {
@@ -29,7 +30,7 @@ public class GameManager {
     }
 
     public void startGameAsServer(int port) {
-        if (status != STATUS_NOT_RUNNING)
+        if (isGameRunning())
             throw new IllegalStateException("Game has been started. DO NOT start duplicate instances.");
         gameThread = new Thread() {
             @Override
@@ -44,7 +45,6 @@ public class GameManager {
                     gameStateListener.onEvent(new GameLaunchEvent(GameLaunchEvent.EVENT_STARTED_SERVER));
                     app.getAppLogger().log(Level.INFO, "Connecting client to server.");
                     gameStateListener.onEvent(new GameLaunchEvent(GameLaunchEvent.EVENT_CONNECTING));
-                    gameClient = new GameClient(app);
                     gameClient.connect("127.0.0.1", port);
                     app.getAppLogger().log(Level.INFO, "Client connected.");
                     gameStateListener.onEvent(new GameLaunchEvent(GameLaunchEvent.EVENT_CONNECTED));
@@ -66,7 +66,7 @@ public class GameManager {
     }
 
     public void startGameAsClient(String address, int port) {
-        if (status != STATUS_NOT_RUNNING)
+        if (isGameRunning())
             throw new IllegalStateException("Game has been started. DO NOT start duplicate instances.");
         gameThread = new Thread() {
             @Override
@@ -76,7 +76,6 @@ public class GameManager {
                     app.getAppLogger().log(Level.INFO, "Starting game as client.");
                     app.getAppLogger().log(Level.INFO, "Connecting client to server.");
                     gameStateListener.onEvent(new GameLaunchEvent(GameLaunchEvent.EVENT_CONNECTING));
-                    gameClient = new GameClient(app);
                     gameClient.connect(address, port);
                     app.getAppLogger().log(Level.INFO, "Client connected.");
                     gameStateListener.onEvent(new GameLaunchEvent(GameLaunchEvent.EVENT_CONNECTED));
@@ -98,6 +97,20 @@ public class GameManager {
     }
 
     public void terminateGame() {
+        app.getAppLogger().log(Level.INFO, "Terminating game.");
+        app.getAppLogger().log(Level.INFO, "Interrupting game launch thread.");
+        gameThread.interrupt();
+        app.getAppLogger().log(Level.INFO, "Terminating client service.");
+        gameClient.terminateClient(new InterruptedException("Game interrupted by user."));
+        app.getAppLogger().log(Level.INFO, "Terminating server service.");
+        if (isHostingServer()) {
+            try {
+                gameServer.terminateService();
+            } catch (IOException e) {
+                app.getAppLogger().log(Level.WARNING, "IO Error while terminating server service. Ignored.", e);
+            }
+        }
+        app.getAppLogger().log(Level.INFO, "Game terminated.");
         status = STATUS_NOT_RUNNING;
     }
 

@@ -25,6 +25,7 @@ public class WindowManager {
     }
 
     public void showGameFrame(GameFrame.GameLaunchOptions options) {
+        this.gameFrame.initializeFrame();
         this.gameFrame.setVisible(true);
         this.gameFrame.launchGame(options);
     }

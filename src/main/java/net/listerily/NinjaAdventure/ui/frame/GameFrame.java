@@ -10,14 +10,28 @@ import net.listerily.NinjaAdventure.ui.components.LoadingPanel;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 
 public class GameFrame extends AppBaseFrame {
-    private final GamingPanel gamingPanel;
-    private final ErrorPanel errorPanel;
-    private final LoadingPanel loadingPanel;
+    private GamingPanel gamingPanel;
+    private ErrorPanel errorPanel;
+    private LoadingPanel loadingPanel;
     public GameFrame(App app) {
         super(app);
 
+        addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                super.windowClosing(e);
+                app.getGameManager().terminateGame();
+                app.getWindowManager().showMenuFrame();
+            }
+        });
+    }
+
+    public void initializeFrame() {
+        this.getContentPane().removeAll();
         setMinimumSize(new Dimension(1280, 768));
         loadingPanel = new LoadingPanel(this);
         errorPanel = new ErrorPanel(this);
@@ -31,7 +45,6 @@ public class GameFrame extends AppBaseFrame {
         gameManager.setClientListener(new GameClient.ClientListener() {
             @Override
             public void onConnectionLost(Exception e) {
-                System.out.println("FUCKYOU");
                 showErrorPanel(e.toString());
             }
         });
@@ -86,7 +99,7 @@ public class GameFrame extends AppBaseFrame {
 
     @Override
     protected boolean shouldExitOnWindowClose() {
-        return true;
+        return false;
     }
 
     public static class GameLaunchOptions {

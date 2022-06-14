@@ -14,14 +14,22 @@ public class ClientController {
     }
 
     public void move(boolean down, boolean left, boolean up, boolean right) {
+        if (up && down && left && right)
+            return;
+        if (!up && !down && !left && !right)
+            return;
+        if (up && down && !left && !right)
+            return;
+        if (!up && !down && left && right)
+            return;
         PlayerMoveData playerMoveData = new PlayerMoveData();
         double dx = 0, dy = 0;
-        if (down) dy += 1;
-        if (up) dy -= 1;
-        if (left) dx -= 1;
-        if (right) dx += 1;
+        if (down) dy += 1.0;
+        if (up) dy -= 1.0;
+        if (left) dx -= 1.0;
+        if (right) dx += 1.0;
         double length = Math.sqrt(dx * dx + dy * dy);
-        double scaleTo = 0.1;
+        double scaleTo = 0.14;
         dx /= (length / scaleTo);
         dy /= (length / scaleTo);
         playerMoveData.dx = (float) dx;

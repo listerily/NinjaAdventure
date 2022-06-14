@@ -179,6 +179,7 @@ public class GameServer {
         messageConsumerLookup.remove(clientUUID);
         messageProducerLookup.get(clientUUID).interrupt();
         messageProducerLookup.remove(clientUUID);
+        messageQueueLookup.remove(clientUUID);
         try (Socket socket = socketLookup.get(clientUUID)) {
             socketLookup.remove(clientUUID, socket);
             socket.close();
@@ -186,6 +187,7 @@ public class GameServer {
             app.getAppLogger().log(Level.WARNING, "SERVER: Unable to close client socket. Skipping.", e);
         }
         serverListener.onTerminateClientService(clientUUID);
+        --aliveConnections;
     }
 
     public synchronized void terminateService() throws IOException {

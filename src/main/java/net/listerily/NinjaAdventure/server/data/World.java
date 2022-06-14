@@ -9,16 +9,17 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.UUID;
 
-public class World {
+public class World extends TickingObject {
     private final HashMap<Integer, Scene> scenes;
-    private ArrayList<Entity> entities;
+    private final ArrayList<Entity> entities;
     public World(ResourceManager resourceManager) {
         scenes = new HashMap<>();
-        scenes.put(0, new Scene(resourceManager, 0));
+        scenes.put(0, new Scene(resourceManager, this, 0));
         entities = new ArrayList<>();
     }
 
     public synchronized void tick(TickMessageHandler handler) {
+        super.tick(handler);
         if (scenes != null)
             scenes.forEach((id, scene) -> scene.tick(handler));
         if (entities != null)
@@ -33,11 +34,17 @@ public class World {
         Player player = new Player(this, playerUUID);
         player.setScene(scenes.get(0));
         player.moveToSpawn();
+        player.markUpdated();
+        scenes.get(0).markUpdated();
         addEntity(player);
     }
 
     public synchronized void removePlayer(UUID playerUUID) {
-        entities.removeIf(entity -> entity instanceof Player && ((Player) entity).getPlayerUUID().equals(playerUUID));
+        Player target = findPlayer(playerUUID);
+        if (target != null) {
+            target.getScene().markUpdated();
+            entities.remove(target);
+        }
     }
 
     public synchronized Player findPlayer(UUID playerUUID) {

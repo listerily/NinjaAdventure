@@ -1,5 +1,8 @@
 package net.listerily.NinjaAdventure.server.data.entities;
 
+import net.listerily.NinjaAdventure.communication.PlayerData;
+import net.listerily.NinjaAdventure.communication.SCMessage;
+import net.listerily.NinjaAdventure.server.TickMessageHandler;
 import net.listerily.NinjaAdventure.server.data.World;
 
 import java.util.UUID;
@@ -12,6 +15,8 @@ public class Player extends Entity {
         super(world);
         this.playerUUID = playerUUID;
         this.setHealth(getMaxHealth());
+        this.nickname = "UNKNOWN";
+        this.character = "BlueNinja";
     }
 
     public UUID getPlayerUUID() {
@@ -41,5 +46,11 @@ public class Player extends Entity {
 
     public void setCharacter(String character) {
         this.character = character;
+    }
+
+    @Override
+    public void yieldUpdateMessage(TickMessageHandler handler) {
+        super.yieldUpdateMessage(handler);
+        handler.submit(new SCMessage(SCMessage.MSG_UPDATE_PLAYER_DATA, PlayerData.generatePlayerData(this).clone()));
     }
 }

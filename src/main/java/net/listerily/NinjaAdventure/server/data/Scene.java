@@ -1,5 +1,7 @@
 package net.listerily.NinjaAdventure.server.data;
 
+import net.listerily.NinjaAdventure.communication.SCMessage;
+import net.listerily.NinjaAdventure.communication.SceneData;
 import net.listerily.NinjaAdventure.resources.ResourceManager;
 import net.listerily.NinjaAdventure.server.TickMessageHandler;
 import net.listerily.NinjaAdventure.server.data.layers.*;
@@ -9,13 +11,18 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.UUID;
 
-public class Scene {
+public class Scene extends TickingObject {
     protected String name;
     protected Position spawnPosition;
     protected HashMap<String, Layer> layers;
     protected int id, width, height;
-    public Scene(ResourceManager resourceManager, int id) {
+    protected final UUID uuid;
+    protected final World world;
+    public Scene(ResourceManager resourceManager, World world, int id) {
+        uuid = UUID.randomUUID();
+        this.world = world;
         try {
             JSONArray scenes = new JSONArray(resourceManager.getCachedResources().readText("Scenes/scene.json"));
             JSONObject sceneInfo = scenes.getJSONObject(id);
@@ -66,8 +73,15 @@ public class Scene {
         }
     }
 
-    public synchronized void tick(TickMessageHandler handler) {
+    @Override
+    public void tick(TickMessageHandler handler) {
+        super.tick(handler);
+    }
 
+    @Override
+    public void yieldUpdateMessage(TickMessageHandler handler) {
+        super.yieldUpdateMessage(handler);
+        handler.submit(new SCMessage(SCMessage.MSG_UPDATE_SCENE_DATA, SceneData.generateSceneData(world, this).clone()));
     }
 
     public Position getSpawnPosition() {
@@ -92,5 +106,9 @@ public class Scene {
 
     public int getHeight() {
         return height;
+    }
+
+    public UUID getUUID() {
+        return uuid;
     }
 }

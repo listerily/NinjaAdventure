@@ -14,6 +14,7 @@ public class SCMessage implements Serializable {
     public final static int MSG_CLIENT_HEARTBEAT_RESPONSE = 7;
     public final static int MSG_PLAYER_MOVE = 8;
     public final static int MSG_UPDATE_PLAYER_DATA = 9;
+    public final static int MSG_UPDATE_SCENE_DATA = 10;
 
     public Object obj;
 

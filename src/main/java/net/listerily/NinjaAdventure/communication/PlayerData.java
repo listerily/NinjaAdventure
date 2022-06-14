@@ -1,5 +1,6 @@
 package net.listerily.NinjaAdventure.communication;
 
+import net.listerily.NinjaAdventure.server.data.entities.Player;
 import net.listerily.NinjaAdventure.util.Position;
 
 import java.io.Serializable;
@@ -36,5 +37,20 @@ public class PlayerData implements Serializable, Cloneable {
         } catch (CloneNotSupportedException e) {
             throw new AssertionError();
         }
+    }
+
+    public static PlayerData generatePlayerData(Player player) {
+        PlayerData playerData = new PlayerData();
+        playerData.position = player.getPosition();
+        playerData.uuid = player.getPlayerUUID();
+        playerData.health = player.getHealth();
+        playerData.nickname = player.getNickname();
+        playerData.character = player.getCharacter();
+        playerData.facing = player.getFacing();
+        playerData.hurting = player.isHurting();
+        playerData.actionState = player.getActionState();
+        playerData.maxHealth = player.getMaxHealth();
+        playerData.dead = player.isDead();
+        return playerData.clone();
     }
 }

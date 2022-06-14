@@ -39,13 +39,20 @@ public class Renderer {
             for (int y = 0; y < sceneData.height; ++y) {
                 if (tileData != null && tileData[x][y] != null) {
                     if (tileData[x][y].tileStackLower != null) {
-                        drawLowerTiles(cachedResources, graphics, tileData[x][y], tileWidth, tileHeight, x, y);
+                        drawTiles(cachedResources, graphics, tileData[x][y].tileStackLower, tileWidth, tileHeight, x, y);
                     }
                 }
             }
         }
 
         if (playerData != null) {
+            if (sceneData.playerData != null) {
+                for (PlayerData otherPlayerData : sceneData.playerData) {
+                    if (otherPlayerData.uuid != playerData.uuid) {
+                        drawPlayer(cachedResources, graphics, otherPlayerData, tileWidth, tileHeight);
+                    }
+                }
+            }
             drawPlayer(cachedResources, graphics, playerData, tileWidth, tileHeight);
         }
 
@@ -54,7 +61,7 @@ public class Renderer {
                 if (tileData != null && tileData[x][y] != null) {
                     // Render tiles lower
                     if (tileData[x][y].tileStackUpper != null) {
-                        drawUpperTiles(cachedResources, graphics, tileData[x][y], tileWidth, tileHeight, x, y);
+                        drawTiles(cachedResources, graphics, tileData[x][y].tileStackUpper, tileWidth, tileHeight, x, y);
                     }
                 }
             }
@@ -82,8 +89,8 @@ public class Renderer {
         }
     }
 
-    public void drawLowerTiles(CachedResources cachedResources, Graphics graphics, TileData tileData, int tileWidth, int tileHeight, int x, int y) {
-        for (String tileId : tileData.tileStackLower) {
+    public void drawTiles(CachedResources cachedResources, Graphics graphics, String[] tileStack, int tileWidth, int tileHeight, int x, int y) {
+        for (String tileId : tileStack) {
             try {
                 Image image = cachedResources.readImage("Tiles/tile_" + tileId + ".png");
                 graphics.drawImage(image, x * tileWidth, y * tileHeight, tileWidth, tileHeight, null);
@@ -92,18 +99,6 @@ public class Renderer {
             }
         }
     }
-
-    public void drawUpperTiles(CachedResources cachedResources, Graphics graphics, TileData tileData, int tileWidth, int tileHeight, int x, int y) {
-        for (String tileId : tileData.tileStackUpper) {
-            try {
-                Image image = cachedResources.readImage("Tiles/tile_" + tileId + ".png");
-                graphics.drawImage(image, x * tileWidth, y * tileHeight, tileWidth, tileHeight, null);
-            } catch (IOException e) {
-                app.getAppLogger().log(Level.WARNING, "IO Error while reading tile resource. Skipped drawing.", e);
-            }
-        }
-    }
-
     public void drawHUD(CachedResources cachedResources, Graphics graphics, int tileWidth, int tileHeight, Dimension size) {
 
     }

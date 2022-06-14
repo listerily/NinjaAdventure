@@ -7,6 +7,7 @@ import net.listerily.NinjaAdventure.server.data.World;
 import net.listerily.NinjaAdventure.server.data.entities.Player;
 import net.listerily.NinjaAdventure.server.data.layers.Layer;
 
+import java.lang.reflect.Array;
 import java.util.*;
 
 public class ClientMessageHandler {
@@ -36,6 +37,7 @@ public class ClientMessageHandler {
         synchronized (serverDataManager.getWorld()) {
             world = serverDataManager.getWorld();
             Player player = world.findPlayer(clientUUID);
+            player.markUpdated();
             player.movePosition(playerMoveData.dx, playerMoveData.dy);
         }
         PlayerData playerData = generatePlayerData(clientUUID);
@@ -53,74 +55,18 @@ public class ClientMessageHandler {
             }
             player.setCharacter(playerInfo.character);
             player.setNickname(playerInfo.nickname);
+            player.getScene().markUpdated();
             clientInitializationData.playerData = generatePlayerData(clientUUID);
-            Scene scene = player.getScene();
-            HashMap<String, Layer> layers = scene.getLayers();
-            Layer[] layerArray = new Layer[layers.size()];
-            int currentIndex = 0;
-            for (HashMap.Entry<String, Layer> entry : layers.entrySet()) {
-                Layer layer = entry.getValue();
-                layerArray[currentIndex++] = layer;
-            }
-            layerArray = Arrays.stream(layerArray).sorted(Comparator.comparingInt(Layer::getDisplayPriority))
-                    .collect(ArrayList::new, ArrayList::add, ArrayList::addAll).toArray(layerArray);
-            clientInitializationData.sceneData = new SceneData();
-            clientInitializationData.sceneData.id = scene.getId();
-            clientInitializationData.sceneData.width = scene.getWidth();
-            clientInitializationData.sceneData.height = scene.getHeight();
-            // TODO: player data and monster data
-            // clientInitializationData.sceneData.playerData
-            // clientInitializationData.sceneData.monsterData
-            TileData[][] tileData = new TileData[scene.getWidth()][scene.getHeight()];
-            for (int x = 0; x < scene.getWidth(); ++x) {
-                for (int y = 0; y < scene.getHeight(); ++y) {
-                    tileData[x][y] = new TileData();
-                    ArrayList<String> tileStackUpper = new ArrayList<>();
-                    ArrayList<String> tileStackLower = new ArrayList<>();
-                    boolean ableToStep = true;
-                    boolean ableToInteract = false;
-                    for (Layer layer : layerArray) {
-                        Tile tile = layer.getTile(x, y);
-                        if (tile != null) {
-                            if (layer.isLowerLayer())
-                                tileStackLower.add(tile.getId());
-                            else if (layer.isUpperLayer())
-                                tileStackUpper.add(tile.getId());
-                            if (layer.ableToInteract(x, y))
-                                ableToInteract = true;
-                            if (!layer.ableToStep(x, y))
-                                ableToStep = false;
-                        }
-                    }
-                    tileData[x][y].ableToInteract = ableToInteract;
-                    tileData[x][y].ableToStep = ableToStep;
-                    tileData[x][y].tileStackLower = new String[tileStackLower.size()];
-                    tileData[x][y].tileStackLower = tileStackLower.toArray(tileData[x][y].tileStackLower);
-                    tileData[x][y].tileStackUpper = new String[tileStackUpper.size()];
-                    tileData[x][y].tileStackUpper = tileStackUpper.toArray(tileData[x][y].tileStackUpper);
-                }
-            }
-            clientInitializationData.sceneData.tileSheet = tileData;
+            clientInitializationData.sceneData = SceneData.generateSceneData(world, player.getScene());
         }
-        return new SCMessage(SCMessage.MSG_SERVER_RESPONSE_INIT, clientInitializationData);
+        return new SCMessage(SCMessage.MSG_SERVER_RESPONSE_INIT, clientInitializationData.clone());
     }
 
     private PlayerData generatePlayerData(UUID clientUUID) {
         synchronized (serverDataManager.getWorld()) {
             world = serverDataManager.getWorld();
             Player player = world.findPlayer(clientUUID);
-            PlayerData playerData = new PlayerData();
-            playerData.position = player.getPosition();
-            playerData.uuid = clientUUID;
-            playerData.health = player.getHealth();
-            playerData.nickname = player.getNickname();
-            playerData.character = player.getCharacter();
-            playerData.facing = player.getFacing();
-            playerData.hurting = player.isHurting();
-            playerData.actionState = player.getActionState();
-            playerData.maxHealth = player.getMaxHealth();
-            playerData.dead = player.isDead();
-            return playerData.clone();
+            return PlayerData.generatePlayerData(player).clone();
         }
     }
 }

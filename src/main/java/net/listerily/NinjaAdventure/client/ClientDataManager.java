@@ -6,6 +6,8 @@ import net.listerily.NinjaAdventure.communication.*;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
 
 public class ClientDataManager {
     private final App app;
@@ -42,6 +44,18 @@ public class ClientDataManager {
     }
 
     public synchronized void updatePlayerData(PlayerData playerData) {
-        this.selfPlayer = playerData.clone();
+        if (playerData.uuid == selfPlayer.uuid) {
+            this.selfPlayer = playerData.clone();
+        } else {
+            for (int i = 0; i < currentSceneData.playerData.length; ++i) {
+                if (currentSceneData.playerData[i].uuid == playerData.uuid) {
+                    currentSceneData.playerData[i] = playerData.clone();
+                }
+            }
+        }
+    }
+
+    public synchronized void updateSceneData(SceneData sceneData) {
+        this.currentSceneData = sceneData.clone();
     }
 }

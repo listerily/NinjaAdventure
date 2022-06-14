@@ -2,10 +2,11 @@ package net.listerily.NinjaAdventure.server.data.entities;
 
 import net.listerily.NinjaAdventure.server.TickMessageHandler;
 import net.listerily.NinjaAdventure.server.data.Scene;
+import net.listerily.NinjaAdventure.server.data.TickingObject;
 import net.listerily.NinjaAdventure.server.data.World;
 import net.listerily.NinjaAdventure.util.Position;
 
-public class Entity {
+public class Entity extends TickingObject {
     protected final World world;
     protected Scene scene;
     protected Position position;
@@ -46,7 +47,9 @@ public class Entity {
         this.position.set(position);
     }
 
+    @Override
     public void tick(TickMessageHandler handler) {
+        super.tick(handler);
         if (this.hurting > 0)
             --this.hurting;
         if (this.actioning > 0)
@@ -128,4 +131,5 @@ public class Entity {
     public int getActionState() {
         return actionState;
     }
+
 }

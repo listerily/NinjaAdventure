@@ -123,8 +123,7 @@ public class GameFrame extends AppBaseFrame {
                         if (isRunningGame) {
                             ClientController clientController = gameManager.getClientController();
                             synchronized (orientationKeys) {
-                                if (orientationKeys[0] || orientationKeys[1] || orientationKeys[2] || orientationKeys[3])
-                                    clientController.move(orientationKeys[0], orientationKeys[1], orientationKeys[2], orientationKeys[3]);
+                                clientController.move(orientationKeys[0], orientationKeys[1], orientationKeys[2], orientationKeys[3]);
                             }
                         }
                     }

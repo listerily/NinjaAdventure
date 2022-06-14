@@ -6,8 +6,6 @@ import net.listerily.NinjaAdventure.communication.*;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.util.ArrayList;
-import java.util.Arrays;
 
 public class ClientDataManager {
     private final App app;

@@ -7,19 +7,23 @@ import net.listerily.NinjaAdventure.communication.SceneData;
 import net.listerily.NinjaAdventure.communication.TileData;
 import net.listerily.NinjaAdventure.resources.CachedResources;
 import net.listerily.NinjaAdventure.resources.ResourceManager;
+import net.listerily.NinjaAdventure.server.data.entities.Player;
 
 import java.awt.*;
+import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.logging.Level;
 
 public class Renderer {
     private final App app;
+    private int animationIndicator = 0;
 
     public Renderer(App app) {
         this.app = app;
     }
 
     public void drawGraphics(ClientDataManager clientDataManager, Graphics graphics, Dimension size) {
+        animationIndicator = (animationIndicator + 1) % 0x7fffffff;
         ResourceManager resourceManager = app.getResourceManager();
         CachedResources cachedResources = resourceManager.getCachedResources();
         SceneData sceneData = clientDataManager.getCurrentSceneDataClone();
@@ -49,11 +53,11 @@ public class Renderer {
             if (sceneData.playerData != null) {
                 for (PlayerData otherPlayerData : sceneData.playerData) {
                     if (otherPlayerData.uuid != playerData.uuid) {
-                        drawPlayer(cachedResources, graphics, otherPlayerData, tileWidth, tileHeight);
+                        drawPlayer(cachedResources, graphics, otherPlayerData, tileWidth, tileHeight, false);
                     }
                 }
             }
-            drawPlayer(cachedResources, graphics, playerData, tileWidth, tileHeight);
+            drawPlayer(cachedResources, graphics, playerData, tileWidth, tileHeight, true);
         }
 
         for (int x = 0; x < sceneData.width; ++x) {
@@ -69,24 +73,61 @@ public class Renderer {
         drawHUD(cachedResources, graphics, tileWidth, tileHeight, size);
     }
 
-    public void drawPlayer(CachedResources cachedResources, Graphics graphics, PlayerData playerData, int tileWidth, int tileHeight) {
-        Image image;
+    public void drawPlayer(CachedResources cachedResources, Graphics graphics, PlayerData playerData, int tileWidth, int tileHeight, boolean other) {
         try {
-            image = cachedResources.readImage("Characters/" + playerData.character + "/SeparateAnim/Idle.png");
-            graphics.drawImage(image, (int) (playerData.position.x * tileWidth - tileWidth * 0.5), (int) (playerData.position.y * tileWidth - tileWidth * 0.5),
-                    tileWidth, tileHeight, null);
-            Font textFont = app.getResourceManager().getCachedResources().readFont(Font.TRUETYPE_FONT, "HUD/Font/NormalFont.ttf").deriveFont(15f);
-            graphics.setFont(textFont);
-            FontMetrics metrics = graphics.getFontMetrics(textFont);
-            graphics.setColor(Color.WHITE);
-            graphics.drawString(playerData.nickname,
-                    (int) (playerData.position.x * tileWidth - metrics.stringWidth(playerData.nickname) / 2),
-                    (int) (playerData.position.y * tileWidth - tileWidth * 0.5 - metrics.getHeight()));
+            if (playerData.dead) {
+                BufferedImage deadImage = cachedResources.readImage("Characters/" + playerData.character + "/SeparateAnim/Dead.png");
+                drawPlayerImage(deadImage, graphics, playerData, tileWidth, tileHeight, other);
+            } else if (playerData.actionState == Player.ACTION_IDLE) {
+                BufferedImage idleImage = cachedResources.readImage("Characters/" + playerData.character + "/SeparateAnim/Idle.png");
+                BufferedImage targetImage;
+                if (playerData.facing == Player.FACING_DOWN) {
+                    targetImage = idleImage.getSubimage(0, 0, 16, 16);
+                } else if (playerData.facing == Player.FACING_UP) {
+                    targetImage = idleImage.getSubimage(16, 0, 16, 16);
+                } else if (playerData.facing == Player.FACING_LEFT) {
+                    targetImage = idleImage.getSubimage(32, 0, 16, 16);
+                } else if (playerData.facing == Player.FACING_RIGHT) {
+                    targetImage = idleImage.getSubimage(48, 0, 16, 16);
+                } else {
+                    app.getAppLogger().log(Level.WARNING, "Illegal facing " + playerData.facing + ", skipped drawing.");
+                    return;
+                }
+                drawPlayerImage(targetImage, graphics, playerData, tileWidth, tileHeight, other);
+            } else if (playerData.actionState == Player.ACTION_WALKING) {
+                BufferedImage idleImage = cachedResources.readImage("Characters/" + playerData.character + "/SeparateAnim/Walk.png");
+                BufferedImage targetImage;
+                if (playerData.facing == Player.FACING_DOWN) {
+                    targetImage = idleImage.getSubimage(0, 16 * ((animationIndicator / 8) % 4), 16, 16);
+                } else if (playerData.facing == Player.FACING_UP) {
+                    targetImage = idleImage.getSubimage(16, 16 * ((animationIndicator / 8) % 4), 16, 16);
+                } else if (playerData.facing == Player.FACING_LEFT) {
+                    targetImage = idleImage.getSubimage(32, 16 * ((animationIndicator / 8) % 4), 16, 16);
+                } else if (playerData.facing == Player.FACING_RIGHT) {
+                    targetImage = idleImage.getSubimage(48, 16 * ((animationIndicator / 8) % 4), 16, 16);
+                } else {
+                    app.getAppLogger().log(Level.WARNING, "Illegal facing " + playerData.facing + ", skipped drawing.");
+                    return;
+                }
+                drawPlayerImage(targetImage, graphics, playerData, tileWidth, tileHeight, other);
+            }
         } catch (IOException e) {
             app.getAppLogger().log(Level.WARNING, "IO Error while reading character resource. Skipped drawing.", e);
         } catch (FontFormatException e) {
             app.getAppLogger().log(Level.WARNING, "IO Error while reading font resource. Skipped drawing.", e);
         }
+    }
+
+    public void drawPlayerImage(BufferedImage image, Graphics graphics, PlayerData playerData, int tileWidth, int tileHeight, boolean other) throws IOException, FontFormatException {
+        graphics.drawImage(image, (int) (playerData.position.x * tileWidth - tileWidth * 0.5), (int) (playerData.position.y * tileWidth - tileWidth * 0.5),
+                tileWidth, tileHeight, null);
+        Font textFont = app.getResourceManager().getCachedResources().readFont(Font.TRUETYPE_FONT, "HUD/Font/NormalFont.ttf").deriveFont(18f);
+        graphics.setFont(textFont);
+        FontMetrics metrics = graphics.getFontMetrics(textFont);
+        graphics.setColor(Color.WHITE);
+        graphics.drawString(playerData.nickname,
+                (int) (playerData.position.x * tileWidth - metrics.stringWidth(playerData.nickname) / 2),
+                (int) (playerData.position.y * tileWidth - tileWidth * 0.5));
     }
 
     public void drawTiles(CachedResources cachedResources, Graphics graphics, String[] tileStack, int tileWidth, int tileHeight, int x, int y) {

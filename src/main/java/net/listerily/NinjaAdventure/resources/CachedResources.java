@@ -4,6 +4,7 @@ import org.javatuples.Pair;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
+import java.awt.image.BufferedImage;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -16,14 +17,14 @@ public class CachedResources {
         resourceManager = mgr;
     }
 
-    private final HashMap<String, Image> imageCache = new HashMap<>();
-    public Image readImage(String name) throws IOException {
+    private final HashMap<String, BufferedImage> imageCache = new HashMap<>();
+    public BufferedImage readImage(String name) throws IOException {
         synchronized (imageCache) {
             if (imageCache.containsKey(name)) {
                 return imageCache.get(name);
             }
         }
-        Image image = ImageIO.read(resourceManager.getResourceURL(name));
+        BufferedImage image = ImageIO.read(resourceManager.getResourceURL(name));
         synchronized (imageCache) {
             imageCache.put(name, image);
             return image;

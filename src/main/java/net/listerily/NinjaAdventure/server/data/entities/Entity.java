@@ -50,12 +50,17 @@ public class Entity extends TickingObject {
     @Override
     public void tick(TickMessageHandler handler) {
         super.tick(handler);
-        if (this.hurting > 0)
+        if (this.hurting > 0) {
             --this.hurting;
+        } else if (this.hurting == 0) {
+            markUpdated();
+        }
         if (this.actioning > 0)
             --this.actioning;
-        else if (this.actioning == 0)
+        else if (this.actioning == 0) {
             this.actionState = ACTION_IDLE;
+            markUpdated();
+        }
     }
 
     public void setHealth(int health) {
@@ -72,7 +77,7 @@ public class Entity extends TickingObject {
 
     public void hurt(int point, Entity attacker) {
         health -= point;
-        this.hurting = 5;
+        this.hurting = 1;
         if (health <= 0) {
             die(attacker);
         }
@@ -80,12 +85,26 @@ public class Entity extends TickingObject {
 
     public void setWalkingAction() {
         this.actionState = ACTION_WALKING;
-        this.actioning = 5;
+        this.actioning = 1;
     }
 
     public void setAttackingAction() {
         this.actionState = ACTION_ATTACK;
-        this.actioning = 5;
+        this.actioning = 1;
+    }
+
+    public void walk(float x, float y) {
+        setWalkingAction();
+        if (y > 0) {
+            facing = FACING_DOWN;
+        } else if (y < 0) {
+            facing = FACING_UP;
+        } else if (x > 0) {
+            facing = FACING_RIGHT;
+        } else if (x < 0) {
+            facing = FACING_LEFT;
+        }
+        movePosition(x, y);
     }
 
     public void die(Entity attacker) {

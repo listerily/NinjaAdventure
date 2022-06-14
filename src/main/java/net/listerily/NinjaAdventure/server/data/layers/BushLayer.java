@@ -12,6 +12,6 @@ public class BushLayer extends LowerLayer {
 
     @Override
     public boolean ableToStep(int x, int y) {
-        return tileSheet[x][y] != null;
+        return tileSheet[x][y] == null;
     }
 }

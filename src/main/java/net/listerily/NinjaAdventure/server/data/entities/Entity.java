@@ -4,7 +4,10 @@ import net.listerily.NinjaAdventure.server.TickMessageHandler;
 import net.listerily.NinjaAdventure.server.data.Scene;
 import net.listerily.NinjaAdventure.server.data.TickingObject;
 import net.listerily.NinjaAdventure.server.data.World;
+import net.listerily.NinjaAdventure.server.data.layers.Layer;
 import net.listerily.NinjaAdventure.util.Position;
+
+import java.util.ArrayList;
 
 public class Entity extends TickingObject {
     protected final World world;
@@ -93,8 +96,7 @@ public class Entity extends TickingObject {
         this.actioning = 1;
     }
 
-    public void walk(float x, float y) {
-        setWalkingAction();
+    public void turn(float x, float y) {
         if (y > 0) {
             facing = FACING_DOWN;
         } else if (y < 0) {
@@ -104,7 +106,31 @@ public class Entity extends TickingObject {
         } else if (x < 0) {
             facing = FACING_LEFT;
         }
-        movePosition(x, y);
+    }
+
+    public void walk(float x, float y) {
+        turn(x, y);
+        if (isWalkable(getPosition().x + x, getPosition().y + y)) {
+            setWalkingAction();
+            movePosition(x, y);
+        } else {
+            float length = (float) Math.sqrt(x * x + y * y) * 0.6f;
+            for (Position facingPosition : getFacingPositions()) {
+                if (isTileWalkable((int) facingPosition.x, (int) facingPosition.y)) {
+                    float targetX = facingPosition.x + 0.5f;
+                    float targetY = facingPosition.y + 0.5f;
+                    if (targetX > position.x && isWalkable(position.x + 0.05f, position.y))
+                        movePosition(length, 0.0f);
+                    if (targetX < position.x && isWalkable(position.x - 0.05f, position.y))
+                        movePosition(-length, 0.0f);
+                    if (targetY > position.y && isWalkable(position.x, position.y + length))
+                        movePosition(0.0f, length);
+                    if (targetY < position.y && isWalkable(position.x, position.y - length))
+                        movePosition(0.0f, -length);
+                    break;
+                }
+            }
+        }
     }
 
     public void die(Entity attacker) {
@@ -151,4 +177,66 @@ public class Entity extends TickingObject {
         return actionState;
     }
 
+    private boolean isTileWalkable(int x, int y) {
+        if (x < 0 || x >= scene.getWidth() || y < 0 || y >= scene.getHeight())
+            return false;
+        for (Layer layer : scene.getLayers().values()) {
+            if (!layer.ableToStep(x, y))
+                return false;
+        }
+        return true;
+    }
+
+    private boolean isWalkable(float x, float y) {
+        float collisionBoxRadius = getCollisionBoxRadius();
+        return isTileWalkable((int) Math.floor(x - collisionBoxRadius), (int) Math.floor(y - collisionBoxRadius)) &&
+                isTileWalkable((int) Math.floor(x + collisionBoxRadius), (int) Math.floor(y + collisionBoxRadius)) &&
+                isTileWalkable((int) Math.floor(x - collisionBoxRadius), (int) Math.floor(y + collisionBoxRadius)) &&
+                isTileWalkable((int) Math.floor(x + collisionBoxRadius), (int) Math.floor(y - collisionBoxRadius));
+    }
+
+    private float getCollisionBoxRadius() {
+        return 0.4f;
+    }
+
+    private ArrayList<Position> getFacingPositions() {
+        float collisionBoxRadius = getCollisionBoxRadius();
+        ArrayList<Position> result = new ArrayList<>();
+        switch (getFacing())
+        {
+            case FACING_UP:
+                result.add(new Position((float) Math.floor(getPosition().x - collisionBoxRadius), (float) (Math.floor(getPosition().y) - 1)));
+                result.add(new Position((float) Math.floor(getPosition().x + collisionBoxRadius), (float) (Math.floor(getPosition().y) - 1)));
+                return result;
+            case FACING_DOWN:
+                result.add(new Position((float) Math.floor(getPosition().x - collisionBoxRadius), (float) (Math.floor(getPosition().y) + 1)));
+                result.add(new Position((float) Math.floor(getPosition().x + collisionBoxRadius), (float) (Math.floor(getPosition().y) + 1)));
+                return result;
+            case FACING_LEFT:
+                result.add(new Position((float) (Math.floor(getPosition().x) - 1), (float) Math.floor(getPosition().y - collisionBoxRadius)));
+                result.add(new Position((float) (Math.floor(getPosition().x) - 1), (float) Math.floor(getPosition().y + collisionBoxRadius)));
+                return result;
+            case FACING_RIGHT:
+                result.add(new Position((float) (Math.floor(getPosition().x) + 1), (float) Math.floor(getPosition().y - collisionBoxRadius)));
+                result.add(new Position((float) (Math.floor(getPosition().x) + 1), (float) Math.floor(getPosition().y + collisionBoxRadius)));
+                return result;
+        }
+        return result;
+    }
+
+    private Position getFacingPosition() {
+        float x = getPosition().x;
+        float y = getPosition().y;
+        switch (getFacing()) {
+            case FACING_UP:
+                return new Position((float) Math.floor(x), (float) (Math.floor(y) - 1));
+            case FACING_DOWN:
+                return new Position((float) Math.floor(x), (float) (Math.floor(y) + 1));
+            case FACING_LEFT:
+                return new Position((float) (Math.floor(x) - 1), (float) Math.floor(y));
+            case FACING_RIGHT:
+                return new Position((float) (Math.floor(x) + 1), (float) Math.floor(y));
+        }
+        return new Position();
+    }
 }

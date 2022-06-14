@@ -122,8 +122,8 @@ public class Renderer {
     }
 
     public void drawPlayerImage(CachedResources cachedResources, BufferedImage image, Graphics graphics, PlayerData playerData, int tileWidth, int tileHeight, boolean other) throws IOException, FontFormatException {
-        graphics.drawImage(image, (int) (playerData.position.x * tileWidth - tileWidth * 0.5), (int) (playerData.position.y * tileWidth - tileWidth * 0.5),
-                tileWidth, tileHeight, null);
+        graphics.drawImage(image, (int) (playerData.position.x * tileWidth - tileWidth * 0.45), (int) (playerData.position.y * tileWidth - tileWidth * 0.5),
+                (int) (tileWidth * 0.9), (int) (tileHeight * 0.9), null);
         Font textFont = cachedResources.readFont(Font.TRUETYPE_FONT, "HUD/Font/NormalFont.ttf").deriveFont(18f);
         graphics.setFont(textFont);
         FontMetrics metrics = graphics.getFontMetrics(textFont);

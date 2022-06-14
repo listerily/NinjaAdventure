@@ -40,19 +40,19 @@ public class Scene extends TickingObject {
                 String layerName = jsonLayer.getString("name");
                 switch (layerName) {
                     case "floor":
-                        newLayer = new LowerLayer(name, width, height, 0);
+                        newLayer = new LowerLayer(layerName, width, height, 0);
                         break;
                     case "ground":
-                        newLayer = new LowerLayer(name, width, height, 1);
+                        newLayer = new LowerLayer(layerName, width, height, 1);
                         break;
                     case "bush":
-                        newLayer = new BushLayer(name, width, height, 2);
+                        newLayer = new BushLayer(layerName, width, height, 2);
                         break;
                     case "object":
-                        newLayer = new ObjectLayer(name, width, height, 3);
+                        newLayer = new ObjectLayer(layerName, width, height, 3);
                         break;
                     case "sky":
-                        newLayer = new UpperLayer(name, width, height, 4);
+                        newLayer = new UpperLayer(layerName, width, height, 4);
                         break;
                     default:
                         throw new IllegalArgumentException("Unknown layer with name " + layerName);

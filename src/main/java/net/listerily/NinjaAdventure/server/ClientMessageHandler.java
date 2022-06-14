@@ -47,6 +47,12 @@ public class ClientMessageHandler {
             clientInitializationData.playerData.health = player.getHealth();
             clientInitializationData.playerData.nickname = player.getNickname();
             clientInitializationData.playerData.character = player.getCharacter();
+            clientInitializationData.playerData.facing = player.getFacing();
+            clientInitializationData.playerData.hurting = player.isHurting();
+            clientInitializationData.playerData.actionState = player.getActionState();
+            clientInitializationData.playerData.maxHealth = player.getMaxHealth();
+            clientInitializationData.playerData.dead = player.isDead();
+
             Scene scene = player.getScene();
             HashMap<String, Layer> layers = scene.getLayers();
             Layer[] layerArray = new Layer[layers.size()];

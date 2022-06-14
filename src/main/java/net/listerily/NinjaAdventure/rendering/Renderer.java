@@ -13,7 +13,7 @@ import java.io.IOException;
 import java.util.logging.Level;
 
 public class Renderer {
-    private App app;
+    private final App app;
 
     public Renderer(App app) {
         this.app = app;
@@ -25,43 +25,86 @@ public class Renderer {
         SceneData sceneData = clientDataManager.getCurrentSceneDataClone();
         PlayerData playerData = clientDataManager.getSelfPlayerClone();
         if (sceneData != null) {
-            TileData[][] tileData = sceneData.tileSheet;
-            int width = size.width;
-            int height = size.height;
-            int imageWidth = width / sceneData.width;
-            int imageHeight = height / sceneData.height;
-            for (int x = 0; x < sceneData.width; ++x) {
-                for (int y = 0; y < sceneData.height; ++y) {
-                    if (tileData != null && tileData[x][y] != null) {
-                        // Render tiles lower
-                        if (tileData[x][y].tileStackLower != null) {
-                            for (String tileId : tileData[x][y].tileStackLower) {
-                                try {
-                                    Image image = cachedResources.readImage("Tiles/tile_" + tileId + ".png");
-                                    graphics.drawImage(image, x * imageWidth, y * imageHeight, imageWidth, imageHeight, null);
-                                } catch (IOException e) {
-                                    app.getAppLogger().log(Level.WARNING, "IO Error while reading tile resource. Skipped drawing.", e);
-                                }
-                            }
-                        }
-                        // render this player
-                        if (playerData != null) {
+            drawScene(cachedResources, graphics, size, sceneData, playerData);
+        }
+    }
 
-                        }
-                        // render tiles upper
-                        if (tileData[x][y].tileStackUpper != null) {
-                            for (String tileId : tileData[x][y].tileStackUpper) {
-                                try {
-                                    Image image = cachedResources.readImage("Tiles/tile_" + tileId + ".png");
-                                    graphics.drawImage(image, x * imageWidth, y * imageHeight, imageWidth, imageHeight, null);
-                                } catch (IOException e) {
-                                    app.getAppLogger().log(Level.WARNING, "IO Error while reading tile resource. Skipped drawing.", e);
-                                }
-                            }
-                        }
+    public void drawScene(CachedResources cachedResources, Graphics graphics, Dimension size, SceneData sceneData, PlayerData playerData) {
+        TileData[][] tileData = sceneData.tileSheet;
+        int width = size.width;
+        int height = size.height;
+        int tileWidth = width / sceneData.width;
+        int tileHeight = height / sceneData.height;
+        for (int x = 0; x < sceneData.width; ++x) {
+            for (int y = 0; y < sceneData.height; ++y) {
+                if (tileData != null && tileData[x][y] != null) {
+                    if (tileData[x][y].tileStackLower != null) {
+                        drawLowerTiles(cachedResources, graphics, tileData[x][y], tileWidth, tileHeight, x, y);
                     }
                 }
             }
         }
+
+        if (playerData != null) {
+            drawPlayer(cachedResources, graphics, playerData, tileWidth, tileHeight);
+        }
+
+        for (int x = 0; x < sceneData.width; ++x) {
+            for (int y = 0; y < sceneData.height; ++y) {
+                if (tileData != null && tileData[x][y] != null) {
+                    // Render tiles lower
+                    if (tileData[x][y].tileStackUpper != null) {
+                        drawUpperTiles(cachedResources, graphics, tileData[x][y], tileWidth, tileHeight, x, y);
+                    }
+                }
+            }
+        }
+        drawHUD(cachedResources, graphics, tileWidth, tileHeight, size);
+    }
+
+    public void drawPlayer(CachedResources cachedResources, Graphics graphics, PlayerData playerData, int tileWidth, int tileHeight) {
+        Image image;
+        try {
+            image = cachedResources.readImage("Characters/" + playerData.character + "/SeparateAnim/Idle.png");
+            graphics.drawImage(image, (int) (playerData.position.x * tileWidth - tileWidth * 0.5), (int) (playerData.position.y * tileWidth - tileWidth * 0.5),
+                    tileWidth, tileHeight, null);
+            Font textFont = app.getResourceManager().getCachedResources().readFont(Font.TRUETYPE_FONT, "HUD/Font/NormalFont.ttf").deriveFont(15f);
+            graphics.setFont(textFont);
+            FontMetrics metrics = graphics.getFontMetrics(textFont);
+            graphics.setColor(Color.WHITE);
+            graphics.drawString(playerData.nickname,
+                    (int) (playerData.position.x * tileWidth - metrics.stringWidth(playerData.nickname) / 2),
+                    (int) (playerData.position.y * tileWidth - tileWidth * 0.5 - metrics.getHeight()));
+        } catch (IOException e) {
+            app.getAppLogger().log(Level.WARNING, "IO Error while reading character resource. Skipped drawing.", e);
+        } catch (FontFormatException e) {
+            app.getAppLogger().log(Level.WARNING, "IO Error while reading font resource. Skipped drawing.", e);
+        }
+    }
+
+    public void drawLowerTiles(CachedResources cachedResources, Graphics graphics, TileData tileData, int tileWidth, int tileHeight, int x, int y) {
+        for (String tileId : tileData.tileStackLower) {
+            try {
+                Image image = cachedResources.readImage("Tiles/tile_" + tileId + ".png");
+                graphics.drawImage(image, x * tileWidth, y * tileHeight, tileWidth, tileHeight, null);
+            } catch (IOException e) {
+                app.getAppLogger().log(Level.WARNING, "IO Error while reading tile resource. Skipped drawing.", e);
+            }
+        }
+    }
+
+    public void drawUpperTiles(CachedResources cachedResources, Graphics graphics, TileData tileData, int tileWidth, int tileHeight, int x, int y) {
+        for (String tileId : tileData.tileStackUpper) {
+            try {
+                Image image = cachedResources.readImage("Tiles/tile_" + tileId + ".png");
+                graphics.drawImage(image, x * tileWidth, y * tileHeight, tileWidth, tileHeight, null);
+            } catch (IOException e) {
+                app.getAppLogger().log(Level.WARNING, "IO Error while reading tile resource. Skipped drawing.", e);
+            }
+        }
+    }
+
+    public void drawHUD(CachedResources cachedResources, Graphics graphics, int tileWidth, int tileHeight, Dimension size) {
+
     }
 }

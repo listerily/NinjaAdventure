@@ -5,25 +5,24 @@ import net.listerily.NinjaAdventure.util.Position;
 import java.io.Serializable;
 import java.util.UUID;
 
-public class PlayerData implements Serializable, Cloneable {
-    public Position position;
+public class PlayerData extends EntityData implements Serializable, Cloneable {
     public UUID uuid;
-    public int health;
     public String nickname;
     public String character;
+
+    public PlayerData() {
+
+    }
+
+    public PlayerData(PlayerData playerData) {
+        super(playerData);
+        this.uuid = playerData.uuid;
+        this.nickname = playerData.nickname;
+        this.character = playerData.character;
+    }
+
     @Override
     public PlayerData clone() {
-        try {
-            PlayerData clone = (PlayerData) super.clone();
-            if (position != null)
-                clone.position = position.clone();
-            clone.uuid = uuid;
-            clone.health = health;
-            clone.nickname = nickname;
-            clone.character = character;
-            return clone;
-        } catch (CloneNotSupportedException e) {
-            throw new AssertionError();
-        }
+        return new PlayerData(this);
     }
 }

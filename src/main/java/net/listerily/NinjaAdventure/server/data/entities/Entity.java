@@ -10,11 +10,28 @@ public class Entity {
     protected Scene scene;
     protected Position position;
     protected int health;
+    protected int actionState;
+    protected boolean dead;
+    protected int hurting;
+    protected int actioning;
+    protected int facing;
+    public static final int ACTION_IDLE = 0;
+    public static final int ACTION_WALKING = 1;
+    public static final int ACTION_ATTACK = 2;
+    public static final int FACING_DOWN = 0;
+    public static final int FACING_LEFT = 1;
+    public static final int FACING_UP = 2;
+    public static final int FACING_RIGHT = 3;
 
     public Entity(World world) {
         this.world = world;
         this.position = new Position();
         this.health = 0;
+        this.actionState = ACTION_IDLE;
+        this.dead = false;
+        this.hurting = 0;
+        this.actioning = 0;
+        this.facing = FACING_DOWN;
     }
 
     public void movePosition(float dx, float dy) {
@@ -30,7 +47,12 @@ public class Entity {
     }
 
     public void tick(TickMessageHandler handler) {
-
+        if (this.hurting > 0)
+            --this.hurting;
+        if (this.actioning > 0)
+            --this.actioning;
+        else if (this.actioning == 0)
+            this.actionState = ACTION_IDLE;
     }
 
     public void setHealth(int health) {
@@ -47,13 +69,24 @@ public class Entity {
 
     public void hurt(int point, Entity attacker) {
         health -= point;
+        this.hurting = 5;
         if (health <= 0) {
             die(attacker);
         }
     }
 
-    public void die(Entity attacker) {
+    public void setWalkingAction() {
+        this.actionState = ACTION_WALKING;
+        this.actioning = 5;
+    }
 
+    public void setAttackingAction() {
+        this.actionState = ACTION_ATTACK;
+        this.actioning = 5;
+    }
+
+    public void die(Entity attacker) {
+        dead = true;
     }
 
     public void setScene(Scene scene) {
@@ -66,5 +99,33 @@ public class Entity {
 
     public Position getPosition() {
         return position;
+    }
+
+    public boolean isDead() {
+        return dead;
+    }
+
+    public boolean isHurting() {
+        return this.hurting > 0;
+    }
+
+    public boolean isAttacking() {
+        return getActionState() == ACTION_ATTACK;
+    }
+
+    public boolean isWalking() {
+        return getActionState() == ACTION_WALKING;
+    }
+
+    public int getFacing() {
+        return facing;
+    }
+
+    public void setFacing(int facing) {
+        this.facing = facing;
+    }
+
+    public int getActionState() {
+        return actionState;
     }
 }

@@ -112,9 +112,9 @@ public class GameFrame extends AppBaseFrame {
             } if (event.type == GameLaunchEvent.EVENT_SUCCEED) {
                 showGamingPanel();
                 if (gameManager.isClientOnly()) {
-                    setTitle(getTitle() + " [CLIENT]");
+                    setTitle("Ninja Adventure [CLIENT]");
                 } else if (gameManager.isHostingServer()) {
-                    setTitle(getTitle() + " [HOSTING: " + options.port + "]");
+                    setTitle("Ninja Adventure [HOSTING: " + options.port + "]");
                 }
                 GameFrame.this.isRunningGame = true;
                 controllerTimer = new Timer(50, new ActionListener() {

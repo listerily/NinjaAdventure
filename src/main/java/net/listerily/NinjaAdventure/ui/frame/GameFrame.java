@@ -48,27 +48,23 @@ public class GameFrame extends AppBaseFrame {
                 showErrorPanel(e.toString());
             }
         });
-        if (options.hosting) {
-            gameManager.setGameStateListener(event -> {
-                if (event.type == GameLaunchEvent.EVENT_FAILED) {
-                    showErrorPanel(event.obj.toString());
-                } if (event.type == GameLaunchEvent.EVENT_SUCCEED) {
-                    showGamingPanel();
-                } else {
-                    loadingPanel.setLoadingMessage(event.toString());
+        gameManager.setGameStateListener(event -> {
+            if (event.type == GameLaunchEvent.EVENT_FAILED) {
+                showErrorPanel(event.obj.toString());
+            } if (event.type == GameLaunchEvent.EVENT_SUCCEED) {
+                showGamingPanel();
+                if (gameManager.isClientOnly()) {
+                    setTitle(getTitle() + " [CLIENT]");
+                } else if (gameManager.isHostingServer()) {
+                    setTitle(getTitle() + " [HOSTING: " + options.port + "]");
                 }
-            });
+            } else {
+                loadingPanel.setLoadingMessage(event.toString());
+            }
+        });
+        if (options.hosting) {
             gameManager.startGameAsServer(options.port);
         } else {
-            gameManager.setGameStateListener(event -> {
-                if (event.type == GameLaunchEvent.EVENT_FAILED) {
-                    showErrorPanel(event.obj.toString());
-                } if (event.type == GameLaunchEvent.EVENT_SUCCEED) {
-                    showGamingPanel();
-                } else {
-                    loadingPanel.setLoadingMessage(event.toString());
-                }
-            });
             gameManager.startGameAsClient(options.address, options.port);
         }
     }

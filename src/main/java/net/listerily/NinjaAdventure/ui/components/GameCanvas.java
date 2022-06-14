@@ -24,7 +24,7 @@ public class GameCanvas extends Canvas {
         Dimension size = getSize();
         graphics.setColor(Color.BLACK);
         graphics.fillRect(0, 0, size.width, size.height);
-        renderer.drawGraphics(clientDataManager, graphics);
+        renderer.drawGraphics(clientDataManager, graphics, size);
     }
 
     public synchronized void paintEvent() {

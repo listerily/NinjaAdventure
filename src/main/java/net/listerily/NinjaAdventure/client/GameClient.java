@@ -18,6 +18,7 @@ public class GameClient {
     private UUID uuid;
     private Thread clientListeningThread;
     private Thread clientWritingThread;
+    private Thread clientHeartbeatThread;
     private ClientDataManager clientDataManager;
     private ServerMessageHandler serverMessageHandler;
     private LinkedBlockingQueue<SCMessage> messageQueue;
@@ -103,16 +104,29 @@ public class GameClient {
                 }
             }
         };
+        clientHeartbeatThread = new Thread() {
+            @Override
+            public void run() {
+                super.run();
+                while (true) {
+                    try {
+                        submitMessage(new SCMessage(SCMessage.MSG_CLIENT_HEARTBEAT));
+                        sleep(2000);
+                    } catch (InterruptedException e) {
+                        app.getAppLogger().log(Level.WARNING, "CLIENT: Heartbeat thread interrupted.", e);
+                        return;
+                    }
+                }
+            }
+        };
         clientListeningThread.start();
         clientWritingThread.start();
-        try {
-            submitMessage(new SCMessage(SCMessage.MSG_UNDEFINED, "Trigger Msg"));
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
+        clientHeartbeatThread.start();
     }
 
     public void terminateClient(Exception exception) {
+        clientListener.onConnectionLost(exception);
+        clientHeartbeatThread.interrupt();
         clientListeningThread.interrupt();
         clientWritingThread.interrupt();
         clientMessageExecutor.shutdownNow();
@@ -121,7 +135,6 @@ public class GameClient {
         } catch (IOException e) {
             app.getAppLogger().log(Level.WARNING, "CLIENT: IO Error while terminating my socket. Skipping.", e);
         }
-        clientListener.onConnectionLost(exception);
     }
 
     private SCMessage handleMessage(SCMessage message) {

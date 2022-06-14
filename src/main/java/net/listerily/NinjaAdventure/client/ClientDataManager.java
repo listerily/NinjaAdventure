@@ -1,22 +1,40 @@
 package net.listerily.NinjaAdventure.client;
 
 import net.listerily.NinjaAdventure.App;
-import net.listerily.NinjaAdventure.communication.SCMessage;
+import net.listerily.NinjaAdventure.communication.*;
 
+import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
 public class ClientDataManager {
     private App app;
+    private SceneData currentSceneData;
+    private PlayerData selfPlayer;
+
     public ClientDataManager(App app) {
         this.app = app;
     }
 
-    public void initialize(ObjectInputStream inputStream, ObjectOutputStream outputStream) {
-
+    public void initialize(ObjectInputStream inputStream, ObjectOutputStream outputStream) throws IOException, ClassNotFoundException {
+        outputStream.writeObject(new SCMessage(SCMessage.MSG_CLIENT_REQUEST_INIT));
+        outputStream.flush();
+        SCMessage response;
+        do {
+            response = (SCMessage) inputStream.readObject();
+        } while (response.type != SCMessage.MSG_SERVER_RESPONSE_INIT);
+        ClientInitializationData initializationData = (ClientInitializationData) response.obj;
+        synchronized (this) {
+            selfPlayer = initializationData.playerData;
+            currentSceneData = initializationData.sceneData;
+        }
     }
 
-    public void tick()  {
+    public synchronized SceneData getCurrentSceneDataClone() {
+        return currentSceneData.clone();
+    }
 
+    public synchronized PlayerData getSelfPlayerClone() {
+        return selfPlayer.clone();
     }
 }

@@ -14,6 +14,7 @@ public class Scene {
     protected String name;
     protected Position spawnPosition;
     protected HashMap<String, Layer> layers;
+    protected int id, width, height;
     public Scene(ResourceManager resourceManager, int id) {
         try {
             JSONArray scenes = new JSONArray(resourceManager.getCachedResources().readText("Scenes/scene.json"));
@@ -22,8 +23,8 @@ public class Scene {
             JSONObject sceneObject = new JSONObject(resourceManager.getCachedResources().readText("Scenes/" + this.name + "/manifest.json"));
             JSONArray spawnPositionArray = sceneObject.getJSONArray("spawn");
             this.spawnPosition = new Position(spawnPositionArray.getFloat(0), spawnPositionArray.getFloat(1));
-            int sceneWidth = sceneObject.getJSONArray("size").getInt(0);
-            int sceneHeight = sceneObject.getJSONArray("size").getInt(1);
+            width = sceneObject.getJSONArray("size").getInt(0);
+            height = sceneObject.getJSONArray("size").getInt(1);
             this.layers = new HashMap<>();
             JSONArray jsonLayers = sceneObject.getJSONArray("layers");
             jsonLayers.forEach(_jsonLayer -> {
@@ -31,23 +32,32 @@ public class Scene {
                 Layer newLayer;
                 String layerName = jsonLayer.getString("name");
                 switch (layerName) {
-                    case "ground":
-                        newLayer = new LowerLayer(name, sceneWidth, sceneHeight, 0);
-                        break;
                     case "floor":
-                        newLayer = new LowerLayer(name, sceneWidth, sceneHeight, 1);
+                        newLayer = new LowerLayer(name, width, height, 0);
+                        break;
+                    case "ground":
+                        newLayer = new LowerLayer(name, width, height, 1);
                         break;
                     case "bush":
-                        newLayer = new BushLayer(name, sceneWidth, sceneHeight, 2);
+                        newLayer = new BushLayer(name, width, height, 2);
                         break;
                     case "object":
-                        newLayer = new ObjectLayer(name, sceneWidth, sceneHeight, 3);
+                        newLayer = new ObjectLayer(name, width, height, 3);
                         break;
                     case "sky":
-                        newLayer = new UpperLayer(name, sceneWidth, sceneHeight, 4);
+                        newLayer = new UpperLayer(name, width, height, 4);
                         break;
                     default:
                         throw new IllegalArgumentException("Unknown layer with name " + layerName);
+                }
+                int cur = 0;
+                for (int y = 0; y < height; ++y) {
+                    for (int x = 0; x < width; ++x) {
+                        int v = jsonLayer.getJSONArray("data").getInt(cur++);
+                        if (v != 0) {
+                            newLayer.setTile(x, y, new Tile(Integer.toString(v)));
+                        }
+                    }
                 }
                 layers.put(layerName, newLayer);
             });
@@ -66,5 +76,21 @@ public class Scene {
 
     public Layer getLayer(String name) {
         return layers.get(name);
+    }
+
+    public HashMap<String, Layer> getLayers() {
+        return layers;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public int getWidth() {
+        return width;
+    }
+
+    public int getHeight() {
+        return height;
     }
 }

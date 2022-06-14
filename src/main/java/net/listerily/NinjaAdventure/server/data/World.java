@@ -37,8 +37,23 @@ public class World {
     }
 
     public synchronized void removePlayer(UUID playerUUID) {
-        entities = entities.stream()
-                .filter(entity -> !(entity instanceof Player) || !((Player)entity).getPlayerUUID().equals(playerUUID))
-                .collect(ArrayList::new, ArrayList::add, ArrayList::addAll);
+        entities.removeIf(entity -> entity instanceof Player && ((Player) entity).getPlayerUUID().equals(playerUUID));
+    }
+
+    public synchronized Player findPlayer(UUID playerUUID) {
+        for (Entity entity : entities) {
+            if (entity instanceof Player && ((Player) entity).getPlayerUUID().equals(playerUUID)) {
+                return (Player) entity;
+            }
+        }
+        return null;
+    }
+
+    public ArrayList<Entity> getEntities() {
+        return entities;
+    }
+
+    public HashMap<Integer, Scene> getScenes() {
+        return scenes;
     }
 }

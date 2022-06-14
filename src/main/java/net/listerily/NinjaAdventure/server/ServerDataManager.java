@@ -16,16 +16,20 @@ public class ServerDataManager {
         world = new World(app.getResourceManager());
     }
 
-    public synchronized void onClientConnected(UUID clientUUID) {
-
+    public void onClientConnected(UUID clientUUID) {
+        world.newPlayer(clientUUID);
     }
 
-    public synchronized void onClientDisconnected(UUID clientUUID) {
-
+    public void onClientDisconnected(UUID clientUUID) {
+        world.removePlayer(clientUUID);
     }
 
-    public synchronized void tick(TickMessageHandler handler)  {
+    public void tick(TickMessageHandler handler)  {
         if (world != null)
             world.tick(handler);
+    }
+
+    public World getWorld() {
+        return world;
     }
 }

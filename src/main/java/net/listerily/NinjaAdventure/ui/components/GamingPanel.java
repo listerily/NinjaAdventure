@@ -19,12 +19,6 @@ public class GamingPanel extends JPanel {
         });
     }
 
-    @Override
-    public void setSize(int width, int height) {
-        super.setSize(width, height);
-        canvas.setSize(getSize());
-    }
-
     public void initialize(App app, ClientDataManager clientDataManager) {
         canvas = new GameCanvas(app, clientDataManager);
         this.add(canvas);

@@ -9,6 +9,13 @@ public class ServerMessageHandler {
     }
 
     public SCMessage handle(SCMessage message) {
-        return new SCMessage(SCMessage.MSG_UNDEFINED, "Hello from client.");
+        if (message.type == SCMessage.MSG_SERVER_HEARTBEAT) {
+            return handleHeartbeatMessage();
+        }
+        return null;
+    }
+
+    private SCMessage handleHeartbeatMessage() {
+        return new SCMessage(SCMessage.MSG_SERVER_HEARTBEAT_RESPONSE);
     }
 }

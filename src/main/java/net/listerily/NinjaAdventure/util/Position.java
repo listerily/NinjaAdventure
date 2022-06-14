@@ -1,6 +1,8 @@
 package net.listerily.NinjaAdventure.util;
 
-public class Position {
+import java.io.Serializable;
+
+public class Position implements Serializable, Cloneable {
     public float x;
     public float y;
 
@@ -45,7 +47,14 @@ public class Position {
     }
 
     @Override
-    protected Object clone() {
-        return new Position(x, y);
+    public Position clone() {
+        try {
+            Position clone = (Position) super.clone();
+            clone.x = x;
+            clone.y = y;
+            return clone;
+        } catch (CloneNotSupportedException e) {
+            throw new AssertionError();
+        }
     }
 }

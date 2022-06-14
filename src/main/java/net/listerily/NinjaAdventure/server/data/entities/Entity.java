@@ -26,7 +26,7 @@ public class Entity {
     }
 
     public void setPosition(Position position) {
-        position.set(position);
+        this.position.set(position);
     }
 
     public void tick(TickMessageHandler handler) {
@@ -62,5 +62,9 @@ public class Entity {
 
     public Scene getScene() {
         return scene;
+    }
+
+    public Position getPosition() {
+        return position;
     }
 }

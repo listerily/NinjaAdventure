@@ -23,6 +23,7 @@ public class GameServer {
     private ClientMessageHandler clientMessageHandler;
     private ServerDataManager serverDataManager;
     private Thread serverDataTickingThread;
+    private Thread serverHeartbeatThread;
     private static final int MAX_CLIENTS = 4;
 
     private int aliveConnections;
@@ -46,6 +47,8 @@ public class GameServer {
             this.serverDataManager.initialize();
             this.serverDataTickingThread = new ServerDataTickingThread();
             this.serverDataTickingThread.start();
+            this.serverHeartbeatThread = new ServerHeartbeatThread();
+            this.serverHeartbeatThread.start();
         }
         startListening();
     }
@@ -89,6 +92,7 @@ public class GameServer {
             ++aliveConnections;
             socketLookup.put(clientUUID, socket);
             messageQueueLookup.put(clientUUID, messageQueue);
+            serverDataManager.onClientConnected(clientUUID);
 
             ObjectOutputStream outputStream = new ObjectOutputStream(new BufferedOutputStream(socket.getOutputStream()));
             outputStream.flush();
@@ -128,7 +132,14 @@ public class GameServer {
                         try {
                             SCMessage message = (SCMessage) inputStream.readObject();
                             clientMessageExecutor.submit(() -> {
-                                SCMessage msg = handleClientMessage(clientUUID, message);
+                                SCMessage msg;
+                                try {
+                                    msg = handleClientMessage(clientUUID, message);
+                                } catch (Exception e) {
+                                    app.getAppLogger().log(Level.SEVERE, "SERVER: Error while handling message. Terminating Client.", e);
+                                    terminateClient(clientUUID);
+                                    return;
+                                }
                                 if (msg != null) {
                                     try {
                                         messageQueue.put(msg);
@@ -149,8 +160,8 @@ public class GameServer {
             messageConsumerLookup.put(clientUUID, messageConsumer);
             messageProducer.start();
             messageConsumer.start();
-            serverDataManager.onClientConnected(clientUUID);
         } catch(IOException e) {
+            serverDataManager.onClientDisconnected(clientUUID);
             messageQueueLookup.remove(clientUUID);
             socketLookup.remove(clientUUID, socket);
             --aliveConnections;
@@ -179,6 +190,7 @@ public class GameServer {
 
     public synchronized void terminateService() throws IOException {
         this.serverDataTickingThread.interrupt();
+        this.serverHeartbeatThread.interrupt();
         clientMessageExecutor.shutdownNow();
         // shutdown producer and consumer executions
         for (UUID key : messageProducerLookup.keySet()) {
@@ -217,17 +229,44 @@ public class GameServer {
         public void run() {
             super.run();
             while (true) {
-                serverDataManager.tick(message -> messageQueueLookup.forEach((uuid, queue) -> {
-                    try {
-                        queue.put(message);
-                    } catch (InterruptedException e) {
-                        app.getAppLogger().log(Level.WARNING, "SERVER: data ticking thread interrupted. Ignoring message.", e);
+                serverDataManager.tick(message -> {
+                    synchronized (GameServer.this) {
+                        messageQueueLookup.forEach((uuid, queue) -> {
+                            try {
+                                queue.put(message);
+                            } catch (InterruptedException e) {
+                                app.getAppLogger().log(Level.WARNING, "SERVER: Data ticking thread interrupted. Ignoring message.", e);
+                            }
+                        });
                     }
-                }));
+                });
                 try {
                     sleep(50);
                 } catch (InterruptedException e) {
-                    app.getAppLogger().log(Level.WARNING, "SERVER: data ticking thread interrupted.", e);
+                    app.getAppLogger().log(Level.WARNING, "SERVER: Data ticking thread interrupted.", e);
+                    return;
+                }
+            }
+        }
+    }
+    private class ServerHeartbeatThread extends Thread {
+        @Override
+        public void run() {
+            super.run();
+            while (!Thread.interrupted()) {
+                synchronized (GameServer.this) {
+                    messageQueueLookup.forEach((uuid, queue) -> {
+                        try {
+                            queue.put(new SCMessage(SCMessage.MSG_SERVER_HEARTBEAT));
+                        } catch (InterruptedException e) {
+                            app.getAppLogger().log(Level.WARNING, "SERVER: Heartbeat thread interrupted. Ignoring message.", e);
+                        }
+                    });
+                }
+                try {
+                    sleep(2000);
+                } catch (InterruptedException e) {
+                    app.getAppLogger().log(Level.WARNING, "SERVER: Heartbeat thread interrupted. Ignoring message.", e);
                     return;
                 }
             }

@@ -10,24 +10,33 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Random;
 import java.util.UUID;
 
 public class Scene extends TickingObject {
     protected String name;
     protected Position spawnPosition;
     protected HashMap<String, Layer> layers;
-    protected int id, width, height;
+    protected HashMap<PortalPosition, Integer> portalPositions;
+    protected HashMap<Integer, Portal> portals;
+    protected int width, height;
     protected ArrayList<String> weathers;
     protected final UUID uuid;
     protected final World world;
-    public Scene(ResourceManager resourceManager, World world, int id) {
-        uuid = UUID.randomUUID();
+
+    public Scene(ResourceManager resourceManager, World world, UUID uuid, int type, Scene prevScene) {
+        this.uuid = uuid;
         this.world = world;
         try {
             JSONArray scenes = new JSONArray(resourceManager.getCachedResources().readText("Scenes/scene.json"));
-            JSONObject sceneInfo = scenes.getJSONObject(id);
+            int index = 0;
+            if (type == 1) {
+                index = 1 + new Random().nextInt(scenes.length() - 1);
+            }
+            JSONObject sceneInfo = scenes.getJSONObject(index);
             this.name = sceneInfo.getString("name");
             JSONObject sceneObject = new JSONObject(resourceManager.getCachedResources().readText("Scenes/" + this.name + "/manifest.json"));
             JSONArray spawnPositionArray = sceneObject.getJSONArray("spawn");
@@ -76,6 +85,36 @@ public class Scene extends TickingObject {
                 String weather = (String) _weather;
                 this.weathers.add(weather);
             });
+            this.portals = new HashMap<>();
+            this.portalPositions = new HashMap<>();
+            JSONArray jsonPortals = sceneObject.getJSONArray("portals");
+            jsonPortals.forEach(_jsonPortal -> {
+                JSONObject jsonPortal = (JSONObject) _jsonPortal;
+                int x = jsonPortal.getJSONArray("position").getInt(0);
+                int y = jsonPortal.getJSONArray("position").getInt(1);
+                PortalPosition portalPosition = new PortalPosition();
+                portalPosition.x = x;
+                portalPosition.y = y;
+                int portalId = jsonPortal.getInt("id");
+                int portalType = jsonPortal.getInt("type");
+                portalPositions.put(portalPosition, portalId);
+                Position returnPosition = new Position();
+                returnPosition.x = jsonPortal.getJSONArray("return").getFloat(0);
+                returnPosition.y = jsonPortal.getJSONArray("return").getFloat(1);
+                if (portalType == 1) {
+                    Portal portal = new Portal();
+                    portal.type = portalType;
+                    portal.scene = null;
+                    portal.returnPosition = returnPosition;
+                    portals.put(portalId, portal);
+                } else if (portalType == -1) {
+                    Portal portal = new Portal();
+                    portal.type = portalType;
+                    portal.scene = prevScene;
+                    portal.returnPosition = returnPosition;
+                    portals.put(portalId, portal);
+                }
+            });
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -104,10 +143,6 @@ public class Scene extends TickingObject {
         return layers;
     }
 
-    public int getId() {
-        return id;
-    }
-
     public int getWidth() {
         return width;
     }
@@ -122,5 +157,28 @@ public class Scene extends TickingObject {
 
     public ArrayList<String> getWeathers() {
         return weathers;
+    }
+
+    public static class PortalPosition implements Serializable {
+        public int x, y;
+        @Override
+        public boolean equals(Object obj) {
+            if (obj instanceof PortalPosition) {
+                PortalPosition rhs = (PortalPosition) obj;
+                return x == rhs.x && y == rhs.y;
+            }
+            return super.equals(obj);
+        }
+
+        @Override
+        public int hashCode() {
+            return x << 16 | y;
+        }
+    }
+
+    public static class Portal {
+        public Scene scene;
+        public int type;
+        public Position returnPosition;
     }
 }

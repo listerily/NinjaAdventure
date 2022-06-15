@@ -6,11 +6,13 @@ import net.listerily.NinjaAdventure.communication.*;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.util.UUID;
 
 public class ClientDataManager {
     private final App app;
     private SceneData currentSceneData;
     private PlayerData selfPlayer;
+    private UUID currentSceneUUID;
 
     public ClientDataManager(App app) {
         this.app = app;
@@ -41,6 +43,10 @@ public class ClientDataManager {
         return selfPlayer.clone();
     }
 
+    public synchronized void switchScene(UUID newSceneUUID) {
+        currentSceneUUID = newSceneUUID;
+    }
+
     public synchronized void updatePlayerData(PlayerData playerData) {
         if (playerData.uuid == selfPlayer.uuid) {
             this.selfPlayer = playerData.clone();
@@ -54,6 +60,9 @@ public class ClientDataManager {
     }
 
     public synchronized void updateSceneData(SceneData sceneData) {
-        this.currentSceneData = sceneData.clone();
+        if (currentSceneUUID == null || currentSceneUUID == sceneData.sceneUUID) {
+            currentSceneUUID = sceneData.sceneUUID;
+            this.currentSceneData = sceneData.clone();
+        }
     }
 }

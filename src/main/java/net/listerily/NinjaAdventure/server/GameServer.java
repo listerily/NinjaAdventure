@@ -231,15 +231,33 @@ public class GameServer {
         public void run() {
             super.run();
             while (true) {
-                serverDataManager.tick(message -> {
-                    synchronized (GameServer.this) {
-                        messageQueueLookup.forEach((uuid, queue) -> {
+                serverDataManager.tick(new TickMessageHandler() {
+                    @Override
+                    public void submit(SCMessage message) {
+                        synchronized (GameServer.this) {
+                            messageQueueLookup.forEach((uuid, queue) -> {
+                                try {
+                                    queue.put(message);
+                                } catch (InterruptedException e) {
+                                    app.getAppLogger().log(Level.WARNING, "SERVER: Data ticking thread interrupted. Ignoring message.", e);
+                                }
+                            });
+                        }
+                    }
+
+                    @Override
+                    public void submitTo(SCMessage message, UUID clientUUID) {
+                        synchronized (GameServer.this) {
                             try {
-                                queue.put(message);
+                                if (messageQueueLookup.get(clientUUID) != null) {
+                                    messageQueueLookup.get(clientUUID).put(message);
+                                } else {
+                                    app.getAppLogger().log(Level.WARNING, "SERVER: message submitted to a unknown client with UUID=" + clientUUID + ". Ignoring message.");
+                                }
                             } catch (InterruptedException e) {
                                 app.getAppLogger().log(Level.WARNING, "SERVER: Data ticking thread interrupted. Ignoring message.", e);
                             }
-                        });
+                        }
                     }
                 });
                 try {

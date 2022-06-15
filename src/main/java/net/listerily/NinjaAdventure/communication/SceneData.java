@@ -10,7 +10,6 @@ import java.io.Serializable;
 import java.util.*;
 
 public class SceneData implements Serializable, Cloneable {
-    public int id;
     public int width, height;
     public TileData[][] tileSheet;
     public MonsterData[] monsterData;
@@ -22,7 +21,6 @@ public class SceneData implements Serializable, Cloneable {
     public SceneData clone() {
         try {
             SceneData clone = (SceneData) super.clone();
-            clone.id = id;
             clone.width = width;
             clone.height = height;
             if (tileSheet != null) {
@@ -68,7 +66,6 @@ public class SceneData implements Serializable, Cloneable {
         }
         layerArray = Arrays.stream(layerArray).sorted(Comparator.comparingInt(Layer::getDisplayPriority))
                 .collect(ArrayList::new, ArrayList::add, ArrayList::addAll).toArray(layerArray);
-        sceneData.id = scene.getId();
         sceneData.width = scene.getWidth();
         sceneData.height = scene.getHeight();
         sceneData.sceneUUID = scene.getUUID();

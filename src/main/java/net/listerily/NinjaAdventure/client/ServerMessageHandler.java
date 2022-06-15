@@ -4,6 +4,8 @@ import net.listerily.NinjaAdventure.communication.PlayerData;
 import net.listerily.NinjaAdventure.communication.SCMessage;
 import net.listerily.NinjaAdventure.communication.SceneData;
 
+import java.util.UUID;
+
 public class ServerMessageHandler {
     private ClientDataManager clientDataManager;
     public ServerMessageHandler(ClientDataManager clientDataManager) {
@@ -17,6 +19,8 @@ public class ServerMessageHandler {
             return handlePlayerDataUpdateMessage((PlayerData) message.obj);
         } else if (message.type == SCMessage.MSG_UPDATE_SCENE_DATA) {
             return handleSceneDataUpdateMessage((SceneData) message.obj);
+        } else if (message.type == SCMessage.MSG_SWITCH_SCENE) {
+            return handleSwitchSceneMessage((UUID) message.obj);
         }
         return null;
     }
@@ -29,6 +33,12 @@ public class ServerMessageHandler {
         clientDataManager.updatePlayerData(playerData);
         return null;
     }
+
+    private SCMessage handleSwitchSceneMessage(UUID newSceneUUID) {
+        clientDataManager.switchScene(newSceneUUID);
+        return null;
+    }
+
 
     private SCMessage handleSceneDataUpdateMessage(SceneData sceneData) {
         clientDataManager.updateSceneData(sceneData);

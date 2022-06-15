@@ -46,6 +46,10 @@ public class Position implements Serializable, Cloneable {
         this.y = position.y;
     }
 
+    public float distance(Position position) {
+        return (float) Math.sqrt(Math.pow(x - position.x, 2) +  Math.pow(y - position.y, 2));
+    }
+
     @Override
     public Position clone() {
         try {

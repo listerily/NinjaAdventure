@@ -8,8 +8,10 @@ import net.listerily.NinjaAdventure.server.data.layers.Layer;
 import net.listerily.NinjaAdventure.util.Position;
 
 import java.util.ArrayList;
+import java.util.UUID;
 
 public class Entity extends TickingObject {
+    protected UUID uuid;
     protected final World world;
     protected Scene scene;
     protected Position position;
@@ -27,10 +29,11 @@ public class Entity extends TickingObject {
     public static final int FACING_UP = 2;
     public static final int FACING_RIGHT = 3;
 
-    public Entity(World world) {
+    public Entity(World world, UUID uuid) {
+        this.uuid = uuid;
         this.world = world;
         this.position = new Position();
-        this.health = 0;
+        this.health = getMaxHealth();
         this.actionState = ACTION_IDLE;
         this.dead = false;
         this.hurting = 0;
@@ -80,7 +83,7 @@ public class Entity extends TickingObject {
 
     public void hurt(int point, Entity attacker) {
         health -= point;
-        this.hurting = 1;
+        this.hurting = 4;
         if (health <= 0) {
             die(attacker);
         }
@@ -175,6 +178,10 @@ public class Entity extends TickingObject {
 
     public int getActionState() {
         return actionState;
+    }
+
+    public UUID getUUID() {
+        return uuid;
     }
 
     private boolean isTileWalkable(int x, int y) {

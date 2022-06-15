@@ -42,7 +42,7 @@ public class PlayerData implements Serializable, Cloneable {
     public static PlayerData generatePlayerData(Player player) {
         PlayerData playerData = new PlayerData();
         playerData.position = player.getPosition();
-        playerData.uuid = player.getPlayerUUID();
+        playerData.uuid = player.getUUID();
         playerData.health = player.getHealth();
         playerData.nickname = player.getNickname();
         playerData.character = player.getCharacter();

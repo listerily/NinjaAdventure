@@ -1,13 +1,15 @@
 package net.listerily.NinjaAdventure.client;
 
+import net.listerily.NinjaAdventure.communication.MonsterData;
 import net.listerily.NinjaAdventure.communication.PlayerData;
 import net.listerily.NinjaAdventure.communication.SCMessage;
 import net.listerily.NinjaAdventure.communication.SceneData;
+import net.listerily.NinjaAdventure.server.data.entities.Monster;
 
 import java.util.UUID;
 
 public class ServerMessageHandler {
-    private ClientDataManager clientDataManager;
+    private final ClientDataManager clientDataManager;
     public ServerMessageHandler(ClientDataManager clientDataManager) {
         this.clientDataManager = clientDataManager;
     }
@@ -21,6 +23,8 @@ public class ServerMessageHandler {
             return handleSceneDataUpdateMessage((SceneData) message.obj);
         } else if (message.type == SCMessage.MSG_SWITCH_SCENE) {
             return handleSwitchSceneMessage((UUID) message.obj);
+        } else if (message.type == SCMessage.MSG_MONSTER_UPDATE) {
+            return handleMonsterUpdateMessage((MonsterData) message.obj);
         }
         return null;
     }
@@ -31,6 +35,11 @@ public class ServerMessageHandler {
 
     private SCMessage handlePlayerDataUpdateMessage(PlayerData playerData) {
         clientDataManager.updatePlayerData(playerData);
+        return null;
+    }
+
+    private SCMessage handleMonsterUpdateMessage(MonsterData monsterData) {
+        clientDataManager.updateMonsterData(monsterData);
         return null;
     }
 

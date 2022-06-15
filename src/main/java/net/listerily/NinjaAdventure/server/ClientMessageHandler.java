@@ -37,8 +37,10 @@ public class ClientMessageHandler {
         synchronized (serverDataManager.getWorld()) {
             world = serverDataManager.getWorld();
             Player player = world.findPlayer(clientUUID);
-            player.walk(playerMoveData.dx, playerMoveData.dy);
-            player.markUpdated();
+            if (!player.isDead()) {
+                player.walk(playerMoveData.dx, playerMoveData.dy);
+                player.markUpdated();
+            }
         }
         PlayerData playerData = generatePlayerData(clientUUID);
         return new SCMessage(SCMessage.MSG_UPDATE_PLAYER_DATA, playerData.clone());

@@ -2,11 +2,13 @@ package net.listerily.NinjaAdventure.rendering;
 
 import net.listerily.NinjaAdventure.App;
 import net.listerily.NinjaAdventure.client.ClientDataManager;
+import net.listerily.NinjaAdventure.communication.MonsterData;
 import net.listerily.NinjaAdventure.communication.PlayerData;
 import net.listerily.NinjaAdventure.communication.SceneData;
 import net.listerily.NinjaAdventure.communication.TileData;
 import net.listerily.NinjaAdventure.resources.CachedResources;
 import net.listerily.NinjaAdventure.resources.ResourceManager;
+import net.listerily.NinjaAdventure.server.data.entities.Entity;
 import net.listerily.NinjaAdventure.server.data.entities.Player;
 
 import java.awt.*;
@@ -54,6 +56,12 @@ public class Renderer {
                         drawTiles(cachedResources, graphics, tileData[x][y].tileStackLower, tileWidth, tileHeight, x, y);
                     }
                 }
+            }
+        }
+
+        if (sceneData.monsterData != null) {
+            for (MonsterData monsterData : sceneData.monsterData) {
+                drawMonster(cachedResources, graphics, monsterData, tileWidth, tileHeight);
             }
         }
 
@@ -124,18 +132,34 @@ public class Renderer {
         }
     }
 
-    public void drawPlayerImage(CachedResources cachedResources, BufferedImage image, Graphics graphics, PlayerData playerData, int tileWidth, int tileHeight, boolean other) throws IOException, FontFormatException {
-        if (playerData.hurting) {
-            graphics.drawImage(addTransparentColorOverlay(image, Color.RED, 0, 0.5),
-                    (int) (playerData.position.x * tileWidth - tileWidth * 0.45),
-                    (int) (playerData.position.y * tileHeight - tileHeight * 0.5),
-                    (int) (tileWidth * 0.9), (int) (tileHeight * 0.9), null);
-        } else {
-            graphics.drawImage(image,
-                    (int) (playerData.position.x * tileWidth - tileWidth * 0.45),
-                    (int) (playerData.position.y * tileHeight - tileHeight * 0.5),
-                    (int) (tileWidth * 0.9), (int) (tileHeight * 0.9), null);
+    public void drawMonster(CachedResources cachedResources, Graphics graphics, MonsterData monsterData, int tileWidth, int tileHeight) {
+        if (monsterData.dead)
+            return;
+        try {
+            String[] monsterNames = new String[]{"Mouse", "Slime", "Snake", "Reptile", "Bamboo", "Dragon", "Lizard", "Mushroom", "Slime2", "Snake2"};
+            BufferedImage image = cachedResources.readImage("Actor/Monsters/" + monsterNames[monsterData.type] + ".png");
+            BufferedImage targetImage;
+            int imageY = 16 * ((animationIndicator / 8) % 4);
+            if (monsterData.facing == Entity.FACING_DOWN) {
+                targetImage = image.getSubimage(0, imageY, 16, 16);
+            } else if (monsterData.facing == Entity.FACING_UP) {
+                targetImage = image.getSubimage(16, imageY, 16, 16);
+            } else if (monsterData.facing == Entity.FACING_LEFT) {
+                targetImage = image.getSubimage(32, imageY, 16, 16);
+            } else if (monsterData.facing == Entity.FACING_RIGHT) {
+                targetImage = image.getSubimage(48, imageY, 16, 16);
+            } else {
+                app.getAppLogger().log(Level.WARNING, "Illegal facing " + monsterData.facing + ", skipped drawing.");
+                return;
+            }
+            drawMonsterImage(cachedResources, targetImage, graphics, monsterData, tileWidth, tileHeight);
+        } catch (IOException e) {
+            app.getAppLogger().log(Level.WARNING, "IO Error while reading monster resource. Skipped drawing.", e);
         }
+    }
+
+    public void drawPlayerImage(CachedResources cachedResources, BufferedImage image, Graphics graphics, PlayerData playerData, int tileWidth, int tileHeight, boolean other) throws IOException, FontFormatException {
+        drawEntityImage(image, graphics, playerData.hurting, tileWidth, tileHeight, playerData.position.x, playerData.position.y);
         Font textFont = cachedResources.readFont(Font.TRUETYPE_FONT, "HUD/Font/NormalFont.ttf").deriveFont(18f);
         graphics.setFont(textFont);
         FontMetrics metrics = graphics.getFontMetrics(textFont);
@@ -144,16 +168,41 @@ public class Renderer {
                 (int) (playerData.position.x * tileWidth - metrics.stringWidth(playerData.nickname) / 2),
                 (int) (playerData.position.y * tileHeight - tileHeight * 0.55));
         if (other) {
-            BufferedImage lifeBarUnder = cachedResources.readImage("HUD/LifeBarMiniUnder.png");
-            BufferedImage lifeBarUpper = cachedResources.readImage("HUD/LifeBarMiniProgress.png");
-            int progress = (int) (18.0 * playerData.health / playerData.maxHealth);
-            graphics.drawImage(lifeBarUnder,
-                    (int) (playerData.position.x * tileWidth - tileWidth * 0.5),
-                    (int) (playerData.position.y * tileHeight - tileHeight * 0.5),
-                    tileWidth, tileHeight / 6, null);
+            drawLifeBar(cachedResources, graphics, tileWidth, tileHeight, playerData.health, playerData.maxHealth, playerData.position.x, playerData.position.y);
+        }
+    }
+
+    public void drawMonsterImage(CachedResources cachedResources, BufferedImage image, Graphics graphics, MonsterData monsterData, int tileWidth, int tileHeight) throws IOException {
+        drawEntityImage(image, graphics, monsterData.hurting, tileWidth, tileHeight, monsterData.position.x, monsterData.position.y);
+        drawLifeBar(cachedResources, graphics, tileWidth, tileHeight, monsterData.health, monsterData.maxHealth, monsterData.position.x, monsterData.position.y);
+    }
+
+    public void drawEntityImage(BufferedImage image, Graphics graphics, boolean hurting, int tileWidth, int tileHeight, float x, float y) {
+        if (hurting) {
+            graphics.drawImage(addTransparentColorOverlay(image, Color.RED, 0, 0.5),
+                    (int) (x * tileWidth - tileWidth * 0.45),
+                    (int) (y * tileHeight - tileHeight * 0.5),
+                    (int) (tileWidth * 0.9), (int) (tileHeight * 0.9), null);
+        } else {
+            graphics.drawImage(image,
+                    (int) (x * tileWidth - tileWidth * 0.45),
+                    (int) (y * tileHeight - tileHeight * 0.5),
+                    (int) (tileWidth * 0.9), (int) (tileHeight * 0.9), null);
+        }
+    }
+
+    public void drawLifeBar(CachedResources cachedResources, Graphics graphics, int tileWidth, int tileHeight, int health, int maxHealth, float x, float y) throws IOException {
+        BufferedImage lifeBarUnder = cachedResources.readImage("HUD/LifeBarMiniUnder.png");
+        BufferedImage lifeBarUpper = cachedResources.readImage("HUD/LifeBarMiniProgress.png");
+        int progress = (int) (18.0 * health / maxHealth);
+        graphics.drawImage(lifeBarUnder,
+                (int) (x * tileWidth - tileWidth * 0.5),
+                (int) (y * tileHeight - tileHeight * 0.5),
+                tileWidth, tileHeight / 6, null);
+        if (progress > 0) {
             graphics.drawImage(lifeBarUpper.getSubimage(0, 0, progress, 4),
-                    (int) (playerData.position.x * tileWidth - tileWidth * 0.5),
-                    (int) (playerData.position.y * tileHeight - tileHeight * 0.5),
+                    (int) (x * tileWidth - tileWidth * 0.5),
+                    (int) (y * tileHeight - tileHeight * 0.5),
                     (int) (tileWidth * (progress / 18.0)), tileHeight / 6, null);
         }
     }

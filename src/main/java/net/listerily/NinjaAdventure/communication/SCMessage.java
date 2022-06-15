@@ -16,6 +16,7 @@ public class SCMessage implements Serializable {
     public final static int MSG_UPDATE_PLAYER_DATA = 9;
     public final static int MSG_UPDATE_SCENE_DATA = 10;
     public final static int MSG_SWITCH_SCENE = 11;
+    public final static int MSG_MONSTER_UPDATE = 12;
 
     public Object obj;
 

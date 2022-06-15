@@ -1,9 +1,11 @@
 package net.listerily.NinjaAdventure.server.data;
 
+import net.listerily.NinjaAdventure.communication.MonsterData;
 import net.listerily.NinjaAdventure.communication.SCMessage;
 import net.listerily.NinjaAdventure.communication.SceneData;
 import net.listerily.NinjaAdventure.resources.ResourceManager;
 import net.listerily.NinjaAdventure.server.TickMessageHandler;
+import net.listerily.NinjaAdventure.server.data.entities.Monster;
 import net.listerily.NinjaAdventure.server.data.layers.*;
 import net.listerily.NinjaAdventure.util.Position;
 import org.json.JSONArray;
@@ -24,6 +26,7 @@ public class Scene extends TickingObject {
     protected HashMap<Integer, Portal> portals;
     protected int width, height, variant;
     protected ArrayList<String> weathers;
+    protected ArrayList<Monster> monsters;
     protected final UUID uuid;
     protected final World world;
 
@@ -117,6 +120,17 @@ public class Scene extends TickingObject {
                     portals.put(portalId, portal);
                 }
             });
+            this.monsters = new ArrayList<>();
+            JSONArray jsonMonsters = sceneObject.getJSONArray("monsters");
+            jsonMonsters.forEach(_jsonMonster -> {
+                JSONArray monsterPosition = (JSONArray) _jsonMonster;
+                float monsterPositionX = monsterPosition.getFloat(0);
+                float monsterPositionY = monsterPosition.getFloat(1);
+                Monster newMonster = new Monster(world, UUID.randomUUID());
+                newMonster.setScene(this);
+                newMonster.setPosition(monsterPositionX, monsterPositionY);
+                this.monsters.add(newMonster);
+            });
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -125,6 +139,7 @@ public class Scene extends TickingObject {
     @Override
     public void tick(TickMessageHandler handler) {
         super.tick(handler);
+        this.monsters.forEach(monster -> monster.tick(handler));
     }
 
     @Override
@@ -155,6 +170,10 @@ public class Scene extends TickingObject {
 
     public UUID getUUID() {
         return uuid;
+    }
+
+    public ArrayList<Monster> getMonsters() {
+        return monsters;
     }
 
     public ArrayList<String> getWeathers() {

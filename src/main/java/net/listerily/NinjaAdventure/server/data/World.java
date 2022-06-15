@@ -12,7 +12,7 @@ import java.util.UUID;
 
 public class World extends TickingObject {
     private final HashMap<UUID, Scene> scenes;
-    private final ArrayList<Entity> entities;
+    private final ArrayList<Player> players;
     private final ResourceManager resourceManager;
     private final UUID spawnSceneUUID;
     public World(ResourceManager resourceManager) {
@@ -20,23 +20,21 @@ public class World extends TickingObject {
         scenes = new HashMap<>();
         spawnSceneUUID = UUID.randomUUID();
         scenes.put(spawnSceneUUID, new Scene(resourceManager, this, spawnSceneUUID, 0, null));
-        entities = new ArrayList<>();
+        players = new ArrayList<>();
     }
 
     public synchronized void tick(TickMessageHandler handler) {
         super.tick(handler);
         if (scenes != null)
             scenes.forEach((id, scene) -> scene.tick(handler));
-        if (entities != null)
-            entities.forEach(entity -> entity.tick(handler));
+        if (players != null)
+            players.forEach(entity -> entity.tick(handler));
         teleportPlayers(handler);
     }
 
     private synchronized void teleportPlayers(TickMessageHandler handler) {
-        if (scenes != null && entities != null) {
-            for (Entity entity : getEntities()) {
-                if (entity instanceof Player) {
-                    Player player = (Player) entity;
+        if (scenes != null && players != null) {
+            for (Player player : getPlayers()) {
                     Scene.PortalPosition portalPosition = new Scene.PortalPosition();
                     portalPosition.x = (int) player.getPosition().x;
                     portalPosition.y = (int) player.getPosition().y;
@@ -73,15 +71,11 @@ public class World extends TickingObject {
                             newScene.markUpdated();
                             player.markUpdated();
                         }
-                        handler.submitTo(new SCMessage(SCMessage.MSG_SWITCH_SCENE, newSceneUUID), player.getPlayerUUID());
+                        handler.submitTo(new SCMessage(SCMessage.MSG_SWITCH_SCENE, newSceneUUID), player.getUUID());
                     }
                 }
-            }
-        }
-    }
 
-    public synchronized void addEntity(Entity entity) {
-        this.entities.add(entity);
+        }
     }
 
     public synchronized void newPlayer(UUID playerUUID) {
@@ -90,28 +84,28 @@ public class World extends TickingObject {
         player.moveToSpawn();
         player.markUpdated();
         scenes.get(spawnSceneUUID).markUpdated();
-        addEntity(player);
+        this.players.add(player);
     }
 
     public synchronized void removePlayer(UUID playerUUID) {
         Player target = findPlayer(playerUUID);
         if (target != null) {
             target.getScene().markUpdated();
-            entities.remove(target);
+            players.remove(target);
         }
     }
 
     public synchronized Player findPlayer(UUID playerUUID) {
-        for (Entity entity : entities) {
-            if (entity instanceof Player && ((Player) entity).getPlayerUUID().equals(playerUUID)) {
-                return (Player) entity;
+        for (Player entity : players) {
+            if (entity.getUUID().equals(playerUUID)) {
+                return entity;
             }
         }
         return null;
     }
 
-    public ArrayList<Entity> getEntities() {
-        return entities;
+    public ArrayList<Player> getPlayers() {
+        return players;
     }
 
     public HashMap<UUID, Scene> getScenes() {

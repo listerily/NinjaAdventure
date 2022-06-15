@@ -59,6 +59,14 @@ public class ClientDataManager {
         }
     }
 
+    public synchronized void updateMonsterData(MonsterData monsterData) {
+        for (int i = 0; i < currentSceneData.monsterData.length; ++i) {
+            if (currentSceneData.monsterData[i].uuid == monsterData.uuid) {
+                currentSceneData.monsterData[i] = monsterData.clone();
+            }
+        }
+    }
+
     public synchronized void updateSceneData(SceneData sceneData) {
         if (currentSceneUUID == null || currentSceneUUID == sceneData.sceneUUID) {
             currentSceneUUID = sceneData.sceneUUID;

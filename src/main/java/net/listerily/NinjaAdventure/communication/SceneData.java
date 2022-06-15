@@ -3,6 +3,7 @@ package net.listerily.NinjaAdventure.communication;
 import net.listerily.NinjaAdventure.server.data.Scene;
 import net.listerily.NinjaAdventure.server.data.Tile;
 import net.listerily.NinjaAdventure.server.data.World;
+import net.listerily.NinjaAdventure.server.data.entities.Monster;
 import net.listerily.NinjaAdventure.server.data.entities.Player;
 import net.listerily.NinjaAdventure.server.data.layers.Layer;
 
@@ -70,16 +71,18 @@ public class SceneData implements Serializable, Cloneable {
         sceneData.height = scene.getHeight();
         sceneData.sceneUUID = scene.getUUID();
 
-        ArrayList<Player> players = world.getEntities().stream().filter(entity -> entity instanceof Player && entity.getScene() == scene)
+        ArrayList<Player> players = world.getPlayers().stream().filter(entity -> entity.getScene() == scene)
                 .collect(ArrayList::new, (arrayList, entity) -> arrayList.add((Player) entity), ArrayList::addAll);
         sceneData.playerData = new PlayerData[players.size()];
         currentIndex = 0;
         for (Player otherPlayer : players) {
             sceneData.playerData[currentIndex++] = PlayerData.generatePlayerData(otherPlayer).clone();
         }
-
-        // TODO: monster data
-        // sceneData.monsterData
+        sceneData.monsterData = new MonsterData[scene.getMonsters().size()];
+        currentIndex = 0;
+        for (Monster monster : scene.getMonsters()) {
+            sceneData.monsterData[currentIndex++] = MonsterData.generateMonsterData(monster).clone();
+        }
         TileData[][] tileData = new TileData[scene.getWidth()][scene.getHeight()];
         for (int x = 0; x < scene.getWidth(); ++x) {
             for (int y = 0; y < scene.getHeight(); ++y) {

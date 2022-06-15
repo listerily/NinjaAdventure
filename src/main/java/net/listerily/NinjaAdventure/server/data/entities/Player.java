@@ -8,19 +8,13 @@ import net.listerily.NinjaAdventure.server.data.World;
 import java.util.UUID;
 
 public class Player extends Entity {
-    protected UUID playerUUID;
     protected String nickname;
     protected String character;
     public Player(World world, UUID playerUUID) {
-        super(world);
-        this.playerUUID = playerUUID;
+        super(world, playerUUID);
         this.setHealth(getMaxHealth());
         this.nickname = "UNKNOWN";
         this.character = "BlueNinja";
-    }
-
-    public UUID getPlayerUUID() {
-        return playerUUID;
     }
 
     @Override

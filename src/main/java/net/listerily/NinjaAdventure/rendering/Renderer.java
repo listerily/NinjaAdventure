@@ -38,7 +38,7 @@ public class Renderer {
             int tileHeight = size.height / sceneData.height;
             drawWeather(cachedResources, graphics, size, sceneData, tileWidth, tileHeight);
             if (playerData != null) {
-                drawHUD(cachedResources, graphics, tileWidth, tileHeight, playerData);
+                drawHUD(cachedResources, graphics, size, tileWidth, tileHeight, playerData);
             }
         }
     }
@@ -406,7 +406,7 @@ public class Renderer {
         }
     }
 
-    public void drawHUD(CachedResources cachedResources, Graphics graphics, int tileWidth, int tileHeight, PlayerData playerData) {
+    public void drawHUD(CachedResources cachedResources, Graphics graphics, Dimension size, int tileWidth, int tileHeight, PlayerData playerData) {
         try {
             BufferedImage heartImage = cachedResources.readImage("HUD/Heart.png");
             int hp = playerData.health;
@@ -423,8 +423,21 @@ public class Renderer {
                         i * tileWidth + tileWidth / 4, tileHeight / 4,
                         tileWidth, tileHeight, null);
             }
+
+            if (playerData.dead) {
+                Font textFont = cachedResources.readFont(Font.TRUETYPE_FONT, "HUD/Font/Gameplay.ttf").deriveFont(100f);
+                graphics.setFont(textFont);
+                FontMetrics metrics = graphics.getFontMetrics(textFont);
+                graphics.setColor(Color.RED);
+                String stringToDraw = "!!YOU DIED!!";
+                graphics.drawString(stringToDraw,
+                        size.width / 2 - metrics.stringWidth(stringToDraw) / 2,
+                        size.height / 2 - metrics.getHeight() / 2);
+            }
         } catch (IOException e) {
             app.getAppLogger().log(Level.WARNING, "IO Error while reading resource. Skipped drawing HUD.", e);
+        } catch (FontFormatException e) {
+            app.getAppLogger().log(Level.WARNING, "IO Error while reading font. Skipped drawing HUD.", e);
         }
     }
 

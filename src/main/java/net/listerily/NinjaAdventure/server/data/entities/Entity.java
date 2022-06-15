@@ -96,7 +96,7 @@ public class Entity extends TickingObject {
 
     public void setAttackingAction() {
         this.actionState = ACTION_ATTACK;
-        this.actioning = 1;
+        this.actioning = 5;
     }
 
     public void turn(float x, float y) {
@@ -112,6 +112,8 @@ public class Entity extends TickingObject {
     }
 
     public void walk(float x, float y) {
+        if (isDead() || isAttacking())
+            return;
         turn(x, y);
         if (isWalkable(getPosition().x + x, getPosition().y + y)) {
             setWalkingAction();

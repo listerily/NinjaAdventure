@@ -109,16 +109,49 @@ public class Renderer {
                 }
                 drawPlayerImage(cachedResources, targetImage, graphics, playerData, tileWidth, tileHeight, other);
             } else if (playerData.actionState == Player.ACTION_WALKING) {
-                BufferedImage idleImage = cachedResources.readImage("Characters/" + playerData.character + "/SeparateAnim/Walk.png");
+                BufferedImage walkingImage = cachedResources.readImage("Characters/" + playerData.character + "/SeparateAnim/Walk.png");
                 BufferedImage targetImage;
                 if (playerData.facing == Player.FACING_DOWN) {
-                    targetImage = idleImage.getSubimage(0, 16 * ((animationIndicator / 8) % 4), 16, 16);
+                    targetImage = walkingImage.getSubimage(0, 16 * ((animationIndicator / 8) % 4), 16, 16);
                 } else if (playerData.facing == Player.FACING_UP) {
-                    targetImage = idleImage.getSubimage(16, 16 * ((animationIndicator / 8) % 4), 16, 16);
+                    targetImage = walkingImage.getSubimage(16, 16 * ((animationIndicator / 8) % 4), 16, 16);
                 } else if (playerData.facing == Player.FACING_LEFT) {
-                    targetImage = idleImage.getSubimage(32, 16 * ((animationIndicator / 8) % 4), 16, 16);
+                    targetImage = walkingImage.getSubimage(32, 16 * ((animationIndicator / 8) % 4), 16, 16);
                 } else if (playerData.facing == Player.FACING_RIGHT) {
-                    targetImage = idleImage.getSubimage(48, 16 * ((animationIndicator / 8) % 4), 16, 16);
+                    targetImage = walkingImage.getSubimage(48, 16 * ((animationIndicator / 8) % 4), 16, 16);
+                } else {
+                    app.getAppLogger().log(Level.WARNING, "Illegal facing " + playerData.facing + ", skipped drawing.");
+                    return;
+                }
+                drawPlayerImage(cachedResources, targetImage, graphics, playerData, tileWidth, tileHeight, other);
+            } else if (playerData.actionState == Player.ACTION_ATTACK) {
+                BufferedImage attackImage = cachedResources.readImage("Characters/" + playerData.character + "/SeparateAnim/Attack.png");
+                BufferedImage targetImage;
+                int extra = animationIndicator % 5;
+                if (playerData.facing == Player.FACING_DOWN) {
+                    targetImage = attackImage.getSubimage(0, 0, 16, 16);
+                    graphics.drawImage(cachedResources.readImage("Weapon/WeaponDown.png"),
+                            (int) (playerData.position.x * tileWidth - tileWidth * 7 * 0.05 / 2 - tileWidth * 0.2),
+                            (int) (playerData.position.y * tileHeight - tileWidth * 21 * 0.05 / 2 + tileHeight * 0.6) + extra,
+                            (int) (tileWidth * 7 * 0.05), (int) (tileHeight * 21 * 0.05), null);
+                } else if (playerData.facing == Player.FACING_UP) {
+                    graphics.drawImage(cachedResources.readImage("Weapon/WeaponUp.png"),
+                            (int) (playerData.position.x * tileWidth - tileWidth * 7 * 0.05 / 2 - tileWidth * 0.2),
+                            (int) (playerData.position.y * tileHeight - tileWidth * 21 * 0.05 / 2 - tileHeight * 0.6) - extra,
+                            (int) (tileWidth * 7 * 0.05), (int) (tileHeight * 21 * 0.05), null);
+                    targetImage = attackImage.getSubimage(16, 0, 16, 16);
+                } else if (playerData.facing == Player.FACING_LEFT) {
+                    graphics.drawImage(cachedResources.readImage("Weapon/WeaponLeft.png"),
+                            (int) (playerData.position.x * tileWidth - tileWidth * 21 * 0.05 / 2 - tileWidth * 0.6) - extra,
+                            (int) (playerData.position.y * tileHeight - tileWidth * 7 * 0.05 / 2 + tileHeight * 0.2),
+                            (int) (tileWidth * 21 * 0.05), (int) (tileHeight * 7 * 0.05), null);
+                    targetImage = attackImage.getSubimage(32, 0, 16, 16);
+                } else if (playerData.facing == Player.FACING_RIGHT) {
+                    graphics.drawImage(cachedResources.readImage("Weapon/WeaponRight.png"),
+                            (int) (playerData.position.x * tileWidth - tileWidth * 21 * 0.05 / 2 + tileWidth * 0.6) + extra,
+                            (int) (playerData.position.y * tileHeight - tileWidth * 7 * 0.05 / 2 + tileHeight * 0.2),
+                            (int) (tileWidth * 21 * 0.05), (int) (tileHeight * 7 * 0.05), null);
+                    targetImage = attackImage.getSubimage(48, 0, 16, 16);
                 } else {
                     app.getAppLogger().log(Level.WARNING, "Illegal facing " + playerData.facing + ", skipped drawing.");
                     return;

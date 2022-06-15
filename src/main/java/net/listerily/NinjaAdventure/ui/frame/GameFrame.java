@@ -39,7 +39,11 @@ public class GameFrame extends AppBaseFrame {
         addKeyListener(new KeyAdapter() {
             @Override
             public void keyTyped(KeyEvent e) {
-
+                if (e.getKeyChar() == ' ') {
+                    GameManager gameManager = app.getGameManager();
+                    ClientController clientController = gameManager.getClientController();
+                    clientController.attack();
+                }
             }
 
             @Override

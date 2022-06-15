@@ -25,6 +25,8 @@ public class ClientMessageHandler {
             return handleClientHeartbeatMessage();
         } else if (message.type == SCMessage.MSG_PLAYER_MOVE) {
             return handlePlayerMoveRequest(clientUUID, (PlayerMoveData) message.obj);
+        } else if (message.type == SCMessage.MSG_PLAYER_ATTACK) {
+            return handlePlayerAttackRequest(clientUUID);
         }
         return null;
     }
@@ -39,6 +41,19 @@ public class ClientMessageHandler {
             Player player = world.findPlayer(clientUUID);
             if (!player.isDead()) {
                 player.walk(playerMoveData.dx, playerMoveData.dy);
+                player.markUpdated();
+            }
+        }
+        PlayerData playerData = generatePlayerData(clientUUID);
+        return new SCMessage(SCMessage.MSG_UPDATE_PLAYER_DATA, playerData.clone());
+    }
+
+    private SCMessage handlePlayerAttackRequest(UUID clientUUID) {
+        synchronized (serverDataManager.getWorld()) {
+            world = serverDataManager.getWorld();
+            Player player = world.findPlayer(clientUUID);
+            if (!player.isDead()) {
+                player.attack();
                 player.markUpdated();
             }
         }

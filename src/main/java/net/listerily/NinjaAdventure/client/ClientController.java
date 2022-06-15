@@ -36,4 +36,8 @@ public class ClientController {
         playerMoveData.dy = (float) dy;
         controllerMessageHandler.submit(new SCMessage(SCMessage.MSG_PLAYER_MOVE, playerMoveData));
     }
+
+    public void attack() {
+        controllerMessageHandler.submit(new SCMessage(SCMessage.MSG_PLAYER_ATTACK));
+    }
 }

@@ -16,6 +16,7 @@ public class SceneData implements Serializable, Cloneable {
     public MonsterData[] monsterData;
     public PlayerData[] playerData;
     public UUID sceneUUID;
+    public String[] weathers;
 
     @Override
     public SceneData clone() {
@@ -46,6 +47,10 @@ public class SceneData implements Serializable, Cloneable {
                 }
             }
             clone.sceneUUID = sceneUUID;
+            if (weathers != null) {
+                clone.weathers = new String[weathers.length];
+                System.arraycopy(weathers, 0, clone.weathers, 0, weathers.length);
+            }
             return clone;
         } catch (CloneNotSupportedException e) {
             throw new AssertionError();
@@ -108,6 +113,8 @@ public class SceneData implements Serializable, Cloneable {
             }
         }
         sceneData.tileSheet = tileData;
+        sceneData.weathers = new String[scene.getWeathers().size()];
+        sceneData.weathers = scene.getWeathers().toArray(sceneData.weathers);
         return sceneData.clone();
     }
 }

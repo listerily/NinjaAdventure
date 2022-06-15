@@ -10,16 +10,18 @@ import net.listerily.NinjaAdventure.resources.ResourceManager;
 import net.listerily.NinjaAdventure.server.data.entities.Player;
 
 import java.awt.*;
-import java.awt.image.BufferedImage;
+import java.awt.image.*;
 import java.io.IOException;
+import java.util.Random;
 import java.util.logging.Level;
 
 public class Renderer {
     private final App app;
-    private int animationIndicator = 0;
+    private int animationIndicator;
 
     public Renderer(App app) {
         this.app = app;
+        this.animationIndicator = 1114514;
     }
 
     public void drawGraphics(ClientDataManager clientDataManager, Graphics graphics, Dimension size) {
@@ -30,6 +32,12 @@ public class Renderer {
         PlayerData playerData = clientDataManager.getSelfPlayerClone();
         if (sceneData != null) {
             drawScene(cachedResources, graphics, size, sceneData, playerData);
+            int tileWidth = size.width / sceneData.width;
+            int tileHeight = size.height / sceneData.height;
+            drawWeather(cachedResources, graphics, size, sceneData, tileWidth, tileHeight);
+            if (playerData != null) {
+                drawHUD(cachedResources, graphics, tileWidth, tileHeight, playerData);
+            }
         }
     }
 
@@ -63,16 +71,11 @@ public class Renderer {
         for (int x = 0; x < sceneData.width; ++x) {
             for (int y = 0; y < sceneData.height; ++y) {
                 if (tileData != null && tileData[x][y] != null) {
-                    // Render tiles lower
                     if (tileData[x][y].tileStackUpper != null) {
                         drawTiles(cachedResources, graphics, tileData[x][y].tileStackUpper, tileWidth, tileHeight, x, y);
                     }
                 }
             }
-        }
-
-        if (playerData != null) {
-            drawHUD(cachedResources, graphics, tileWidth, tileHeight, playerData);
         }
     }
 
@@ -122,26 +125,35 @@ public class Renderer {
     }
 
     public void drawPlayerImage(CachedResources cachedResources, BufferedImage image, Graphics graphics, PlayerData playerData, int tileWidth, int tileHeight, boolean other) throws IOException, FontFormatException {
-        graphics.drawImage(image, (int) (playerData.position.x * tileWidth - tileWidth * 0.45), (int) (playerData.position.y * tileWidth - tileWidth * 0.5),
-                (int) (tileWidth * 0.9), (int) (tileHeight * 0.9), null);
+        if (playerData.hurting) {
+            graphics.drawImage(addTransparentColorOverlay(image, Color.RED, 0, 0.5),
+                    (int) (playerData.position.x * tileWidth - tileWidth * 0.45),
+                    (int) (playerData.position.y * tileHeight - tileHeight * 0.5),
+                    (int) (tileWidth * 0.9), (int) (tileHeight * 0.9), null);
+        } else {
+            graphics.drawImage(image,
+                    (int) (playerData.position.x * tileWidth - tileWidth * 0.45),
+                    (int) (playerData.position.y * tileHeight - tileHeight * 0.5),
+                    (int) (tileWidth * 0.9), (int) (tileHeight * 0.9), null);
+        }
         Font textFont = cachedResources.readFont(Font.TRUETYPE_FONT, "HUD/Font/NormalFont.ttf").deriveFont(18f);
         graphics.setFont(textFont);
         FontMetrics metrics = graphics.getFontMetrics(textFont);
         graphics.setColor(Color.WHITE);
         graphics.drawString(playerData.nickname,
                 (int) (playerData.position.x * tileWidth - metrics.stringWidth(playerData.nickname) / 2),
-                (int) (playerData.position.y * tileWidth - tileWidth * 0.55));
+                (int) (playerData.position.y * tileHeight - tileHeight * 0.55));
         if (other) {
             BufferedImage lifeBarUnder = cachedResources.readImage("HUD/LifeBarMiniUnder.png");
             BufferedImage lifeBarUpper = cachedResources.readImage("HUD/LifeBarMiniProgress.png");
             int progress = (int) (18.0 * playerData.health / playerData.maxHealth);
             graphics.drawImage(lifeBarUnder,
                     (int) (playerData.position.x * tileWidth - tileWidth * 0.5),
-                    (int) (playerData.position.y * tileWidth - tileWidth * 0.5),
+                    (int) (playerData.position.y * tileHeight - tileHeight * 0.5),
                     tileWidth, tileHeight / 6, null);
             graphics.drawImage(lifeBarUpper.getSubimage(0, 0, progress, 4),
                     (int) (playerData.position.x * tileWidth - tileWidth * 0.5),
-                    (int) (playerData.position.y * tileWidth - tileWidth * 0.5),
+                    (int) (playerData.position.y * tileHeight - tileHeight * 0.5),
                     (int) (tileWidth * (progress / 18.0)), tileHeight / 6, null);
         }
     }
@@ -156,6 +168,195 @@ public class Renderer {
             }
         }
     }
+
+    public void drawWeather(CachedResources cachedResources, Graphics graphics, Dimension size, SceneData sceneData, int tileWidth, int tileHeight) {
+        if (sceneData.weathers != null) {
+            for (String weather : sceneData.weathers) {
+                try {
+                    if (weather.equals("cloudy")) {
+                        BufferedImage cloudImage = cachedResources.readImage("FX/Particle/Clouds.png");
+                        int cloudWidth = (int) (20.0 * tileWidth / 4.0);
+                        int cloudHeight = (int) (9.0 * tileHeight / 4.0);
+                        int[] primes = {641, 941, 1433, 809, 1163};
+                        for (int prime : primes) {
+                            Random random = new Random(animationIndicator / prime);
+                            if (random.nextBoolean()) {
+                                random = new Random(prime + animationIndicator / prime);
+                                int startX = random.nextInt((int) (size.width * 0.6));
+                                int startY = random.nextInt((int) (size.height * 0.6));
+                                int endX = startX + (int) (size.width * 0.5);
+                                int endY = startY + (int) (size.height * 0.5);
+                                float progress = (animationIndicator % prime) / (float) prime;
+                                int x = startX + (int) ((endX - startX) * progress);
+                                int y = startY + (int) ((endY - startY) * progress);
+                                int alpha = 200;
+                                if (progress < 0.1) {
+                                    alpha = (int) (255 - progress * 10 * (255 - 200));
+                                } else if (progress > 0.9) {
+                                    alpha = (int) (255 - (1 - progress) * 10 * (255 - 200));
+                                }
+                                graphics.drawImage(addTransparentColorOverlay(cloudImage, Color.BLACK, alpha, 0.8),
+                                        x, y, cloudWidth, cloudHeight, null);
+                            }
+                        }
+                    }
+                    if (weather.equals("rainy")) {
+                        BufferedImage rainImageSource1 = cachedResources.readImage("FX/Particle/Rain.png");
+                        BufferedImage rainImageSource2 = cachedResources.readImage("FX/Particle/RainOnFloor.png");
+                        BufferedImage[] rainImage1 = new BufferedImage[3];
+                        for (int i = 0; i < 3; ++i) {
+                            rainImage1[i] = rainImageSource1.getSubimage(i * 8, 0, 8, 8);
+                        }
+                        BufferedImage[] rainImage2 = new BufferedImage[3];
+                        for (int i = 0; i < 3; ++i) {
+                            rainImage2[i] = rainImageSource2.getSubimage(i * 8, 0, 8, 8);
+                        }
+                        int rainWidth = (int) (tileWidth / 3.0);
+                        int rainHeight = (int) (tileHeight / 3.0);
+                        int[] primes = {131, 137, 139, 149, 151, 157, 163};
+                        for (int prime : primes) {
+                            for (int i = 0; i < 5; ++i) {
+                                Random random = new Random(prime ^ (animationIndicator / prime) ^ i);
+                                int x = random.nextInt((int) (size.width * 1.5));
+                                int y = random.nextInt((int) (size.height * 0.8)) - (int) (size.height * 0.2);
+                                float progress = (animationIndicator % prime) / (float) prime;
+                                int alpha = 32;
+                                if (progress < 0.05) {
+                                    alpha = (int) (255 - progress * 20 * (255 - 32));
+                                } else if (progress > 0.95) {
+                                    alpha = (int) (255 - (1 - progress) * 20 * (255 - 32));
+                                }
+                                graphics.drawImage(addTransparentColorOverlay(rainImage2[random.nextInt(3)], Color.WHITE, alpha, 0.8),
+                                        x, y, rainWidth, rainHeight, null);
+                            }
+                        }
+                        for (int prime : primes) {
+                            for (int i = 0; i < 20; ++i) {
+                                Random random = new Random(prime + animationIndicator / prime + i);
+                                int startX = random.nextInt((int) (size.width * 1.5));
+                                int startY = random.nextInt((int) (size.height * 0.8)) - (int) (size.height * 0.2);
+                                int endX = startX - (int) (size.width * 0.2);
+                                int endY = startY + (int) (size.height * 0.6);
+                                float progress = (animationIndicator % prime) / (float) prime;
+                                int x = startX + (int) ((endX - startX) * progress);
+                                int y = startY + (int) ((endY - startY) * progress);
+                                int alpha = 32;
+                                if (progress < 0.05) {
+                                    alpha = (int) (255 - progress * 20 * (255 - 32));
+                                } else if (progress > 0.95) {
+                                    alpha = (int) (255 - (1 - progress) * 20 * (255 - 32));
+                                }
+                                graphics.drawImage(addTransparentColorOverlay(rainImage1[random.nextInt(3)], Color.WHITE, alpha, 0.8),
+                                        x, y, rainWidth, rainHeight, null);
+                            }
+                        }
+                    }
+                    if (weather.equals("snowy")) {
+                        BufferedImage snowImageSource = cachedResources.readImage("FX/Particle/Snow.png");
+                        BufferedImage[] snowImage = new BufferedImage[7];
+                        for (int i = 0; i < 7; ++i) {
+                            snowImage[i] = snowImageSource.getSubimage(i * 8, 0, 8, 8);
+                        }
+                        int rainWidth = (int) (tileWidth / 3.0);
+                        int rainHeight = (int) (tileHeight / 3.0);
+                        int[] primes = {131, 137, 139, 149, 151, 157, 163};
+                        for (int prime : primes) {
+                            for (int i = 0; i < 20; ++i) {
+                                Random random = new Random(prime + animationIndicator / prime + i);
+                                int startX = random.nextInt((int) (size.width * 1.5));
+                                int startY = random.nextInt((int) (size.height * 0.8)) - (int) (size.height * 0.2);
+                                int endX = startX - (int) (size.width * 0.2);
+                                int endY = startY + (int) (size.height * 0.6);
+                                float progress = (animationIndicator % prime) / (float) prime;
+                                int x = startX + (int) ((endX - startX) * progress);
+                                int y = startY + (int) ((endY - startY) * progress);
+                                int alpha = 32;
+                                if (progress < 0.05) {
+                                    alpha = (int) (255 - progress * 20 * (255 - 32));
+                                } else if (progress > 0.95) {
+                                    alpha = (int) (255 - (1 - progress) * 20 * (255 - 32));
+                                }
+                                int snowImageIndex = (int) (progress * 8);
+                                if (snowImageIndex >= 7)
+                                    snowImageIndex = 6;
+                                graphics.drawImage(addTransparentColorOverlay(snowImage[snowImageIndex], Color.WHITE, alpha, 0.8),
+                                        x, y, rainWidth, rainHeight, null);
+                            }
+                        }
+                    }
+                    if (weather.equals("leafy")) {
+                        BufferedImage leafImageSource = cachedResources.readImage("FX/Particle/Leaf.png");
+                        BufferedImage[] leafImage = new BufferedImage[6];
+                        for (int i = 0; i < 6; ++i) {
+                            leafImage[i] = leafImageSource.getSubimage(i * 12, 0, 12, 7);
+                        }
+                        int leafWidth = (int) (12 * tileWidth / 18.0);
+                        int leafHeight = (int) (7 * tileHeight / 18.0);
+                        int[] primes = {233, 239, 241, 251, 257, 263, 269};
+                        for (int prime : primes) {
+                            for (int i = 0; i < 3; ++i) {
+                                Random random = new Random((prime) ^ (animationIndicator / prime) + i);
+                                int startX = random.nextInt((int) (size.width * 1.5));
+                                int startY = random.nextInt((int) (size.height * 0.8)) - (int) (size.height * 0.2);
+                                int endX = startX + (int) (size.width * 0.2);
+                                int endY = startY + (int) (size.height * 0.6);
+                                float progress = (animationIndicator % prime) / (float) prime;
+                                int x = startX + (int) ((endX - startX) * progress);
+                                int y = startY + (int) ((endY - startY) * progress);
+                                int alpha = 0;
+                                if (progress < 0.05) {
+                                    alpha = (int) (255 - progress * 20 * (255));
+                                } else if (progress > 0.95) {
+                                    alpha = (int) (255 - (1 - progress) * 20 * (255));
+                                }
+                                int imageIndex = (int) (progress * 7);
+                                if (imageIndex >= 6)
+                                    imageIndex = 5;
+                                graphics.drawImage(addTransparentColorOverlay(leafImage[imageIndex], Color.WHITE, alpha, 0.0),
+                                        x, y, leafWidth, leafHeight, null);
+                            }
+                        }
+                    }
+                    if (weather.equals("pink_leafy")) {
+                        BufferedImage leafImageSource = cachedResources.readImage("FX/Particle/LeafPink.png");
+                        BufferedImage[] leafImage = new BufferedImage[6];
+                        for (int i = 0; i < 6; ++i) {
+                            leafImage[i] = leafImageSource.getSubimage(i * 12, 0, 12, 7);
+                        }
+                        int leafWidth = (int) (12 * tileWidth / 18.0);
+                        int leafHeight = (int) (7 * tileHeight / 18.0);
+                        int[] primes = {233, 239, 241, 251, 257, 263, 269};
+                        for (int prime : primes) {
+                            for (int i = 0; i < 3; ++i) {
+                                Random random = new Random((prime) ^ (animationIndicator / prime) + i);
+                                int startX = random.nextInt((int) (size.width * 1.5));
+                                int startY = random.nextInt((int) (size.height * 0.8)) - (int) (size.height * 0.2);
+                                int endX = startX + (int) (size.width * 0.2);
+                                int endY = startY + (int) (size.height * 0.6);
+                                float progress = (animationIndicator % prime) / (float) prime;
+                                int x = startX + (int) ((endX - startX) * progress);
+                                int y = startY + (int) ((endY - startY) * progress);
+                                int alpha = 0;
+                                if (progress < 0.05) {
+                                    alpha = (int) (255 - progress * 20 * (255));
+                                } else if (progress > 0.95) {
+                                    alpha = (int) (255 - (1 - progress) * 20 * (255));
+                                }
+                                int imageIndex = (int) (progress * 7);
+                                if (imageIndex >= 6)
+                                    imageIndex = 5;
+                                graphics.drawImage(addTransparentColorOverlay(leafImage[imageIndex], Color.WHITE, alpha, 0.0),
+                                        x, y, leafWidth, leafHeight, null);
+                            }
+                        }
+                    }
+                } catch (IOException e) {
+                    app.getAppLogger().log(Level.WARNING, "IO Error while reading particle resource. Skipped drawing.", e);
+                }
+            }
+        }
+    }
+
     public void drawHUD(CachedResources cachedResources, Graphics graphics, int tileWidth, int tileHeight, PlayerData playerData) {
         try {
             BufferedImage heartImage = cachedResources.readImage("HUD/Heart.png");
@@ -176,5 +377,30 @@ public class Renderer {
         } catch (IOException e) {
             app.getAppLogger().log(Level.WARNING, "IO Error while reading resource. Skipped drawing HUD.", e);
         }
+    }
+
+    public static Image addTransparentColorOverlay(BufferedImage im, final Color color, int transparency, double rate) {
+        ImageFilter filter = new RGBImageFilter() {
+            public final int markerRGB = color.getRGB() | 0xFF000000;
+
+            public int filterRGB(int x, int y, int rgb) {
+                if ((rgb | 0xff000000) != rgb) {
+                    return rgb;
+                } else {
+                    int r = (0x00ff0000 & rgb) >> 16;
+                    int g = (0x0000ff00 & rgb) >> 8;
+                    int b = (0x000000ff & rgb);
+                    int r2 = (0x00ff0000 & markerRGB) >> 16;
+                    int g2 = (0x0000ff00 & markerRGB) >> 8;
+                    int b2 = (0x000000ff & markerRGB);
+                    r = (int) (r * (1.0 - rate) + r2 * rate);
+                    g = (int) (g * (1.0 - rate) + g2 * rate);
+                    b = (int) (b * (1.0 - rate) + b2 * rate);
+                    return ((255 - transparency) << 24) | (r << 16) | (g << 8) | b;
+                }
+            }
+        };
+        ImageProducer ip = new FilteredImageSource(im.getSource(), filter);
+        return Toolkit.getDefaultToolkit().createImage(ip);
     }
 }

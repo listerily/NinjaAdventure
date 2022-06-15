@@ -10,6 +10,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.UUID;
 
@@ -18,6 +19,7 @@ public class Scene extends TickingObject {
     protected Position spawnPosition;
     protected HashMap<String, Layer> layers;
     protected int id, width, height;
+    protected ArrayList<String> weathers;
     protected final UUID uuid;
     protected final World world;
     public Scene(ResourceManager resourceManager, World world, int id) {
@@ -68,6 +70,12 @@ public class Scene extends TickingObject {
                 }
                 layers.put(layerName, newLayer);
             });
+            this.weathers = new ArrayList<>();
+            JSONArray jsonWeathers = sceneObject.getJSONArray("weathers");
+            jsonWeathers.forEach(_weather -> {
+                String weather = (String) _weather;
+                this.weathers.add(weather);
+            });
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -110,5 +118,9 @@ public class Scene extends TickingObject {
 
     public UUID getUUID() {
         return uuid;
+    }
+
+    public ArrayList<String> getWeathers() {
+        return weathers;
     }
 }

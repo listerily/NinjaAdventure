@@ -22,7 +22,7 @@ public class Scene extends TickingObject {
     protected HashMap<String, Layer> layers;
     protected HashMap<PortalPosition, Integer> portalPositions;
     protected HashMap<Integer, Portal> portals;
-    protected int width, height;
+    protected int width, height, variant;
     protected ArrayList<String> weathers;
     protected final UUID uuid;
     protected final World world;
@@ -34,9 +34,11 @@ public class Scene extends TickingObject {
             JSONArray scenes = new JSONArray(resourceManager.getCachedResources().readText("Scenes/scene.json"));
             int index = 0;
             if (type == 1) {
-                index = 1 + new Random().nextInt(scenes.length() - 1);
+                do {
+                    index = 1 + new Random().nextInt(scenes.length() - 1);
+                } while (prevScene != null && index == prevScene.variant);
             }
-            JSONObject sceneInfo = scenes.getJSONObject(index);
+            JSONObject sceneInfo = scenes.getJSONObject(variant = index);
             this.name = sceneInfo.getString("name");
             JSONObject sceneObject = new JSONObject(resourceManager.getCachedResources().readText("Scenes/" + this.name + "/manifest.json"));
             JSONArray spawnPositionArray = sceneObject.getJSONArray("spawn");

@@ -17,6 +17,7 @@ public class PlayerData implements Serializable, Cloneable {
     public Position position;
     public int health;
     public int maxHealth;
+    public int score;
 
     @Override
     public PlayerData clone() {
@@ -33,6 +34,7 @@ public class PlayerData implements Serializable, Cloneable {
                 clone.position = this.position.clone();
             clone.health = this.health;
             clone.maxHealth = this.maxHealth;
+            clone.score = this.score;
             return clone;
         } catch (CloneNotSupportedException e) {
             throw new AssertionError();
@@ -51,6 +53,7 @@ public class PlayerData implements Serializable, Cloneable {
         playerData.actionState = player.getActionState();
         playerData.maxHealth = player.getMaxHealth();
         playerData.dead = player.isDead();
+        playerData.score = player.getScore();
         return playerData.clone();
     }
 }

@@ -11,6 +11,7 @@ import java.util.UUID;
 public class Player extends Entity {
     protected String nickname;
     protected String character;
+    protected int score = 0;
     public Player(World world, UUID playerUUID) {
         super(world, playerUUID);
         this.setHealth(getMaxHealth());
@@ -61,8 +62,16 @@ public class Player extends Entity {
             if (!monster.isDead() && monster.getPosition().distance(rangeCenter) < 1.3f) {
                 monster.hurt(1, this);
                 monster.markUpdated();
+                if (monster.getHealth() == 0) {
+                    ++score;
+                    markUpdated();
+                }
             }
         }
+    }
+
+    public int getScore() {
+        return score;
     }
 
     @Override

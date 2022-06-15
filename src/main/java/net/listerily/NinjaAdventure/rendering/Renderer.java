@@ -457,15 +457,29 @@ public class Renderer {
                         tileWidth, tileHeight, null);
             }
 
+            Font textFont = cachedResources.readFont(Font.TRUETYPE_FONT, "HUD/Font/Gameplay.ttf");
+            graphics.setFont(textFont.deriveFont(20f));
+            graphics.setColor(Color.BLACK);
+            String stringToDraw = "Score: " + playerData.score;
+            graphics.drawString(stringToDraw, tileWidth / 4, tileHeight + tileHeight / 2);
+
             if (playerData.dead) {
-                Font textFont = cachedResources.readFont(Font.TRUETYPE_FONT, "HUD/Font/Gameplay.ttf").deriveFont(100f);
-                graphics.setFont(textFont);
-                FontMetrics metrics = graphics.getFontMetrics(textFont);
+                graphics.setColor(new Color(0, 0, 0, 127));
+                graphics.fillRect(0, 0, size.width, size.height);
+                graphics.setFont(textFont.deriveFont(100f));
+                FontMetrics metrics = graphics.getFontMetrics(textFont.deriveFont(100f));
                 graphics.setColor(Color.RED);
-                String stringToDraw = "!!YOU DIED!!";
+                stringToDraw = "!!YOU DIED!!";
+                int heightTitle = metrics.getHeight();
                 graphics.drawString(stringToDraw,
                         size.width / 2 - metrics.stringWidth(stringToDraw) / 2,
-                        size.height / 2 - metrics.getHeight() / 2);
+                        size.height / 2 - heightTitle / 2);
+                graphics.setFont(textFont.deriveFont(40f));
+                metrics = graphics.getFontMetrics(textFont.deriveFont(40f));
+                stringToDraw = "Score: " + playerData.score;
+                graphics.drawString(stringToDraw,
+                        size.width / 2 - metrics.stringWidth(stringToDraw) / 2,
+                        size.height / 2 - metrics.getHeight() / 2 + heightTitle);
             }
         } catch (IOException e) {
             app.getAppLogger().log(Level.WARNING, "IO Error while reading resource. Skipped drawing HUD.", e);

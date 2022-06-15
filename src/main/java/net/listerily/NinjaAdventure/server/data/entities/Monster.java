@@ -37,7 +37,7 @@ public class Monster extends Entity {
 
         for (Player player : world.getPlayers()) {
             if (player.getScene() == getScene()) {
-                if (player.getPosition().distance(getPosition()) < 0.3f && !player.isHurting() && !player.dead) {
+                if (player.getPosition().distance(getPosition()) < 0.5f && !player.isHurting() && !player.dead) {
                     player.hurt(1, this);
                     player.markUpdated();
                 }

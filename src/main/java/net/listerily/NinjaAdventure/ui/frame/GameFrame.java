@@ -92,6 +92,7 @@ public class GameFrame extends AppBaseFrame {
     public void initializeFrame() {
         this.getContentPane().removeAll();
         setMinimumSize(new Dimension(1280, 768));
+        setSize(1920, 1152);
         loadingPanel = new LoadingPanel(this);
         errorPanel = new ErrorPanel(this);
         gamingPanel = new GamingPanel();

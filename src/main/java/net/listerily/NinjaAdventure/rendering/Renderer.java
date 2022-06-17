@@ -112,13 +112,13 @@ public class Renderer {
                 BufferedImage walkingImage = cachedResources.readImage("Characters/" + playerData.character + "/SeparateAnim/Walk.png");
                 BufferedImage targetImage;
                 if (playerData.facing == Player.FACING_DOWN) {
-                    targetImage = walkingImage.getSubimage(0, 16 * ((animationIndicator / 8) % 4), 16, 16);
+                    targetImage = walkingImage.getSubimage(0, 16 * ((animationIndicator / 4) % 4), 16, 16);
                 } else if (playerData.facing == Player.FACING_UP) {
-                    targetImage = walkingImage.getSubimage(16, 16 * ((animationIndicator / 8) % 4), 16, 16);
+                    targetImage = walkingImage.getSubimage(16, 16 * ((animationIndicator / 4) % 4), 16, 16);
                 } else if (playerData.facing == Player.FACING_LEFT) {
-                    targetImage = walkingImage.getSubimage(32, 16 * ((animationIndicator / 8) % 4), 16, 16);
+                    targetImage = walkingImage.getSubimage(32, 16 * ((animationIndicator / 4) % 4), 16, 16);
                 } else if (playerData.facing == Player.FACING_RIGHT) {
-                    targetImage = walkingImage.getSubimage(48, 16 * ((animationIndicator / 8) % 4), 16, 16);
+                    targetImage = walkingImage.getSubimage(48, 16 * ((animationIndicator / 4) % 4), 16, 16);
                 } else {
                     app.getAppLogger().log(Level.WARNING, "Illegal facing " + playerData.facing + ", skipped drawing.");
                     return;
@@ -172,7 +172,7 @@ public class Renderer {
             String[] monsterNames = new String[]{"Mouse", "Slime", "Snake", "Reptile", "Bamboo", "Dragon", "Lizard", "Mushroom", "Slime2", "Snake2"};
             BufferedImage image = cachedResources.readImage("Actor/Monsters/" + monsterNames[monsterData.type] + ".png");
             BufferedImage targetImage;
-            int imageY = 16 * ((animationIndicator / 8) % 4);
+            int imageY = 16 * ((animationIndicator / 4) % 4);
             if (monsterData.facing == Entity.FACING_DOWN) {
                 targetImage = image.getSubimage(0, imageY, 16, 16);
             } else if (monsterData.facing == Entity.FACING_UP) {
@@ -295,7 +295,7 @@ public class Renderer {
                         }
                         int rainWidth = (int) (tileWidth / 3.0);
                         int rainHeight = (int) (tileHeight / 3.0);
-                        int[] primes = {131, 137, 139, 149, 151, 157, 163};
+                        int[] primes = {61, 67, 71, 73, 79, 83, 89};
                         for (int prime : primes) {
                             for (int i = 0; i < 5; ++i) {
                                 Random random = new Random(prime ^ (animationIndicator / prime) ^ i);
@@ -341,7 +341,7 @@ public class Renderer {
                         }
                         int rainWidth = (int) (tileWidth / 3.0);
                         int rainHeight = (int) (tileHeight / 3.0);
-                        int[] primes = {131, 137, 139, 149, 151, 157, 163};
+                        int[] primes = {61, 67, 71, 73, 79, 83, 89};
                         for (int prime : primes) {
                             for (int i = 0; i < 20; ++i) {
                                 Random random = new Random(prime + animationIndicator / prime + i);
@@ -374,7 +374,7 @@ public class Renderer {
                         }
                         int leafWidth = (int) (12 * tileWidth / 18.0);
                         int leafHeight = (int) (7 * tileHeight / 18.0);
-                        int[] primes = {233, 239, 241, 251, 257, 263, 269};
+                        int[] primes = {113, 127, 131, 137, 139, 149};
                         for (int prime : primes) {
                             for (int i = 0; i < 3; ++i) {
                                 Random random = new Random((prime) ^ (animationIndicator / prime) + i);
@@ -407,7 +407,7 @@ public class Renderer {
                         }
                         int leafWidth = (int) (12 * tileWidth / 18.0);
                         int leafHeight = (int) (7 * tileHeight / 18.0);
-                        int[] primes = {233, 239, 241, 251, 257, 263, 269};
+                        int[] primes = {113, 127, 131, 137, 139, 149};
                         for (int prime : primes) {
                             for (int i = 0; i < 3; ++i) {
                                 Random random = new Random((prime) ^ (animationIndicator / prime) + i);

@@ -19,7 +19,7 @@ public class GameCanvas extends Canvas {
         this.renderer = new Renderer(app);
         setIgnoreRepaint(true);
         setSize(1920, 1152);
-        repaintTimer = new Timer(20, e -> {
+        repaintTimer = new Timer(50, e -> {
             try {
                 paintEvent();
             } catch (IllegalStateException exception) {
